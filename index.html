@@ -37,7 +37,7 @@
         nav ul { list-style:none; display:flex; gap:40px; align-items:center; }
         nav ul a { font-size:12px; font-weight:400; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); text-decoration:none; transition:color .2s; }
         nav ul a:hover { color:var(--black); }
-        .nav-cta { color:var(--white) !important; background:var(--black); padding:10px 26px; font-weight:500 !important; transition:background .2s !important; }
+        .nav-cta { color:var(--white) !important; background:var(--black); padding:10px 26px; font-weight:500 !important; transition:background .2s !important; border:none; cursor:pointer; font-family:inherit; }
         .nav-cta:hover { background:var(--charcoal) !important; }
 
         /* ── HERO ── */
@@ -220,6 +220,53 @@
         footer ul a:hover { color:var(--black); }
         footer p { font-size:11px; color:var(--mid); }
 
+        /* ── LOGIN MODAL ── */
+        .login-modal-overlay {
+            position:fixed; inset:0; z-index:999;
+            background:rgba(20,20,18,0.6); backdrop-filter:blur(4px);
+            display:none; align-items:center; justify-content:center;
+            animation:fadeIn .3s ease;
+        }
+        @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+        .login-modal-overlay.active { display:flex; }
+        .login-modal {
+            background:var(--white); padding:48px 40px;
+            border-radius:8px; width:420px; max-width:90vw;
+            box-shadow:0 20px 60px rgba(0,0,0,0.12);
+            animation:slideUp .3s ease;
+        }
+        @keyframes slideUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+        .login-modal h2 {
+            font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:300;
+            margin-bottom:8px; color:var(--black);
+        }
+        .login-modal-sub { font-size:12px; color:var(--muted); margin-bottom:32px; }
+        .login-modal form { display:flex; flex-direction:column; }
+        .login-form-group { margin-bottom:20px; }
+        .login-form-label { font-size:11px; letter-spacing:.15em; text-transform:uppercase; color:var(--muted); display:block; margin-bottom:8px; font-weight:400; }
+        .login-form-input {
+            width:100%; padding:12px 14px; border:1px solid var(--line);
+            background:var(--off); color:var(--black); font-family:'DM Sans',sans-serif;
+            font-size:14px; outline:none; transition:border .2s, background .2s;
+        }
+        .login-form-input:focus { border-color:var(--charcoal); background:var(--white); }
+        .login-form-error { font-size:12px; color:#c41e1e; margin-top:6px; display:none; }
+        .login-form-loading { font-size:12px; color:var(--blue); margin-top:6px; display:none; }
+        .login-form-btn {
+            padding:12px 0; background:var(--black); color:var(--white);
+            font-family:'DM Sans',sans-serif; font-size:12px; font-weight:500;
+            letter-spacing:.12em; text-transform:uppercase; border:none;
+            cursor:pointer; transition:background .2s; margin-top:8px;
+        }
+        .login-form-btn:hover { background:var(--charcoal); }
+        .login-form-btn:disabled { background:var(--mid); cursor:not-allowed; }
+        .login-modal-close {
+            position:absolute; top:16px; right:16px; width:24px; height:24px;
+            background:none; border:none; font-size:24px; cursor:pointer;
+            color:var(--muted); transition:color .2s;
+        }
+        .login-modal-close:hover { color:var(--charcoal); }
+
         /* ── REVEAL ── */
         .reveal { opacity:0; transform:translateY(22px); transition:opacity .75s ease, transform .75s ease; }
         .reveal.visible { opacity:1; transform:translateY(0); }
@@ -248,9 +295,33 @@
         <li><a href="#bikes">Bikes</a></li>
         <li><a href="#features">Features</a></li>
         <li><a href="#emi">Financing</a></li>
+        <li><a href="bike-parts.html" class="nav-cta">Bike Parts</a></li>
+        <li><button class="nav-cta" onclick="openLoginModal()">Login</button></li>
         <li><a href="#contact" class="nav-cta">Enquire Now</a></li>
     </ul>
 </nav>
+
+<!-- LOGIN MODAL -->
+<div id="loginModalOverlay" class="login-modal-overlay">
+    <div class="login-modal" style="position:relative;">
+        <button class="login-modal-close" onclick="closeLoginModal()">&times;</button>
+        <h2>Admin Login</h2>
+        <p class="login-modal-sub">Sign in to access the dashboard</p>
+        <form id="loginForm" onsubmit="handleLoginSubmit(event)">
+            <div class="login-form-group">
+                <label class="login-form-label">Email</label>
+                <input class="login-form-input" id="loginEmail" type="email" placeholder="admin@flashwheels.com" required>
+            </div>
+            <div class="login-form-group">
+                <label class="login-form-label">Password</label>
+                <input class="login-form-input" id="loginPassword" type="password" placeholder="••••••" required>
+            </div>
+            <div class="login-form-error" id="loginError"></div>
+            <div class="login-form-loading" id="loginLoading">Signing in...</div>
+            <button type="submit" class="login-form-btn" id="loginSubmitBtn">Sign In</button>
+        </form>
+    </div>
+</div>
 
 <!-- HERO -->
 <section class="hero">
@@ -437,6 +508,7 @@
     <div class="f-logo">Flash<em>Wheels</em></div>
     <ul>
         <li><a href="#bikes">Bikes</a></li>
+        <li><a href="bike-parts.html">Bike Parts</a></li>
         <li><a href="#features">Features</a></li>
         <li><a href="#emi">Financing</a></li>
         <li><a href="#contact">Contact</a></li>
@@ -635,8 +707,100 @@
     // Scroll reveal
     const obs = new IntersectionObserver(entries => {
         entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('visible'); obs.unobserve(e.target); }});
-    }, {threshold:0.1});
-    document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+     }, {threshold:0.1});
+     document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+    // ── Login Modal Functions ──
+    function openLoginModal() {
+        document.getElementById('loginModalOverlay').classList.add('active');
+    }
+
+    function closeLoginModal() {
+        document.getElementById('loginModalOverlay').classList.remove('active');
+        document.getElementById('loginEmail').value = '';
+        document.getElementById('loginPassword').value = '';
+        document.getElementById('loginError').style.display = 'none';
+        document.getElementById('loginLoading').style.display = 'none';
+    }
+
+    // Close modal when clicking outside
+    document.getElementById('loginModalOverlay').addEventListener('click', (e) => {
+        if (e.target.id === 'loginModalOverlay') closeLoginModal();
+    });
+
+    // Close modal on Escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeLoginModal();
+    });
+
+</script>
+
+<!-- Firebase SDK (Compat Version) -->
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+
+<script>
+    // Firebase Configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyAQA8pQcKRv9hBACezKVPn9ffSQf6qvtx4",
+        authDomain: "flashwheels-ad34d.firebaseapp.com",
+        projectId: "flashwheels-ad34d",
+        storageBucket: "flashwheels-ad34d.firebasestorage.app",
+        messagingSenderId: "145924459464",
+        appId: "1:145924459464:web:63c3f93251dfa9be238efd"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    // Handle login form submission
+    function handleLoginSubmit(event) {
+        event.preventDefault();
+
+        const email = document.getElementById('loginEmail').value.trim();
+        const password = document.getElementById('loginPassword').value.trim();
+        const errorEl = document.getElementById('loginError');
+        const loadingEl = document.getElementById('loginLoading');
+        const submitBtn = document.getElementById('loginSubmitBtn');
+
+        errorEl.style.display = 'none';
+        loadingEl.style.display = 'block';
+        submitBtn.disabled = true;
+
+        auth.signInWithEmailAndPassword(email, password)
+            .then(userCredential => {
+                // Login successful
+                loadingEl.style.display = 'none';
+                closeLoginModal();
+                // Redirect to dashboard
+                window.location.href = 'dashboard.html';
+            })
+            .catch(error => {
+                loadingEl.style.display = 'none';
+                submitBtn.disabled = false;
+                errorEl.style.display = 'block';
+
+                // Handle specific error messages
+                switch(error.code) {
+                    case 'auth/invalid-email':
+                        errorEl.textContent = 'Invalid email address.';
+                        break;
+                    case 'auth/user-disabled':
+                        errorEl.textContent = 'This account has been disabled.';
+                        break;
+                    case 'auth/user-not-found':
+                        errorEl.textContent = 'Email not found.';
+                        break;
+                    case 'auth/wrong-password':
+                        errorEl.textContent = 'Incorrect password.';
+                        break;
+                    default:
+                        errorEl.textContent = 'Login failed. Please try again.';
+                }
+                 console.error('Login error:', error);
+             });
+     }
 </script>
 </body>
 </html>
