@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlashWheels — Electric Bikes</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --white: #FAFAFA;
+            --off: #F4F3F0;
+            --light: #E8E6E1;
+            --mid: #B8B6B0;
+            --muted: #7A7872;
+            --charcoal: #2E2E2C;
+            --black: #141412;
+            --line: rgba(0,0,0,0.09);
+        }
+        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+        html { scroll-behavior:smooth; }
+        body { background:var(--white); color:var(--black); font-family:'DM Sans',sans-serif; font-weight:300; overflow-x:hidden; }
+        h1,h2,h3,h4 { font-family:'Cormorant Garamond',serif; font-weight:300; letter-spacing:-0.02em; }
+
+        /* ── NAV ── */
+        nav {
+            position:fixed; top:0; left:0; right:0; z-index:200;
+            display:flex; align-items:center; justify-content:space-between;
+            padding:24px 60px;
+            background:rgba(250,250,250,0.94);
+            backdrop-filter:blur(14px);
+            border-bottom:1px solid var(--line);
+            transition:padding .3s;
+        }
+        nav.scrolled { padding:16px 60px; }
+        .logo { font-family:'Cormorant Garamond',serif; font-size:22px; font-weight:500; letter-spacing:.18em; text-transform:uppercase; color:var(--black); text-decoration:none; }
+        .logo em { font-style:normal; color:var(--muted); }
+        nav ul { list-style:none; display:flex; gap:40px; align-items:center; }
+        nav ul a { font-size:12px; font-weight:400; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); text-decoration:none; transition:color .2s; }
+        nav ul a:hover { color:var(--black); }
+        .nav-cta { color:var(--white) !important; background:var(--black); padding:10px 26px; font-weight:500 !important; transition:background .2s !important; }
+        .nav-cta:hover { background:var(--charcoal) !important; }
+
+        /* ── HERO ── */
+        .hero {
+            min-height:100vh;
+            display:grid; grid-template-columns:1fr 1fr;
+            align-items:center;
+            padding:120px 60px 100px;
+            gap:60px; position:relative; overflow:hidden;
+        }
+        .hero::after { content:''; position:absolute; top:0; right:0; width:50%; height:100%; background:var(--off); z-index:0; }
+        .hero-left { position:relative; z-index:1; }
+        .hero-right { position:relative; z-index:1; display:flex; align-items:center; justify-content:center; padding:40px; }
+        .eyebrow { font-size:11px; font-weight:400; letter-spacing:.28em; text-transform:uppercase; color:var(--muted); margin-bottom:28px; display:flex; align-items:center; gap:14px; }
+        .eyebrow::before { content:''; display:block; width:28px; height:1px; background:var(--mid); }
+        .hero h1 { font-size:clamp(50px,6vw,90px); line-height:.98; margin-bottom:28px; }
+        .hero h1 em { color:var(--muted); }
+        .hero p { font-size:15px; line-height:1.85; color:var(--muted); max-width:370px; margin-bottom:48px; }
+        .hero-btns { display:flex; align-items:center; gap:28px; }
+        .btn-solid { font-size:12px; font-weight:500; letter-spacing:.12em; text-transform:uppercase; color:var(--white); background:var(--black); padding:14px 34px; border:none; cursor:pointer; text-decoration:none; display:inline-block; transition:background .2s; }
+        .btn-solid:hover { background:var(--charcoal); }
+        .btn-ghost { font-size:12px; font-weight:400; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); text-decoration:none; display:flex; align-items:center; gap:8px; transition:color .2s, gap .2s; }
+        .btn-ghost::after { content:'→'; }
+        .btn-ghost:hover { color:var(--black); gap:14px; }
+
+        /* bike SVG illustration */
+        .hero-bike { width:100%; max-width:500px; filter:drop-shadow(0 24px 40px rgba(0,0,0,0.1)); animation:floatY 5s ease-in-out infinite; }
+        @keyframes floatY { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-14px)} }
+
+        .hero-stats { position:absolute; bottom:48px; left:60px; display:flex; gap:44px; z-index:1; }
+        .stat-val { font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:300; line-height:1; }
+        .stat-unit { font-size:12px; }
+        .stat-lbl { font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:var(--mid); margin-top:3px; }
+
+        /* ── TICKER ── */
+        .ticker { overflow:hidden; border-top:1px solid var(--line); border-bottom:1px solid var(--line); background:var(--off); padding:16px 0; }
+        .ticker-track { display:flex; white-space:nowrap; animation:ticker 24s linear infinite; }
+        .ticker-item { font-family:'Cormorant Garamond',serif; font-size:13px; letter-spacing:.3em; text-transform:uppercase; color:var(--mid); padding:0 44px; }
+        .ticker-dot { color:var(--charcoal); }
+        @keyframes ticker { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
+        /* ── SECTION COMMON ── */
+        .sec { padding:100px 60px; }
+        .sec-off { background:var(--off); }
+        .sec-dark { background:var(--black); }
+        .sec-hdr { display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:64px; padding-bottom:28px; border-bottom:1px solid var(--line); }
+        .sec-dark .sec-hdr { border-color:rgba(255,255,255,.08); }
+        .sec-kicker { font-size:11px; letter-spacing:.28em; text-transform:uppercase; color:var(--mid); margin-bottom:10px; }
+        .sec-dark .sec-kicker { color:rgba(255,255,255,.3); }
+        .sec-title { font-family:'Cormorant Garamond',serif; font-size:clamp(34px,4vw,54px); font-weight:300; line-height:1.05; }
+        .sec-dark .sec-title { color:var(--white); }
+        .sec-title em { font-style:italic; color:var(--muted); }
+        .sec-dark .sec-title em { color:rgba(255,255,255,.35); }
+
+        /* ── BIKE CATALOGUE ── */
+        .bikes-grid {
+            display:grid; grid-template-columns:repeat(auto-fill, minmax(320px,1fr));
+            gap:2px; background:var(--line);
+        }
+
+        .bike-card {
+            background:var(--white);
+            display:flex; flex-direction:column;
+            cursor:pointer;
+            transition:background .25s;
+            position:relative;
+            overflow:hidden;
+        }
+        .bike-card:hover { background:var(--off); }
+        .bike-card.active { background:var(--off); }
+
+        /* bike image area */
+        .bike-img-wrap {
+            background:var(--off);
+            padding:40px 32px 28px;
+            position:relative;
+            overflow:hidden;
+            height:220px;
+            display:flex; align-items:center; justify-content:center;
+        }
+        .bike-img-wrap svg { width:100%; max-width:280px; transition:transform .4s; }
+        .bike-card:hover .bike-img-wrap svg { transform:scale(1.04); }
+
+        /* colour dots on image */
+        .colour-dots {
+            position:absolute; bottom:14px; right:16px;
+            display:flex; gap:6px;
+        }
+        .cdot {
+            width:12px; height:12px; border-radius:50%;
+            border:1.5px solid rgba(0,0,0,.12);
+            cursor:pointer; transition:transform .15s;
+        }
+        .cdot:hover { transform:scale(1.3); }
+        .cdot.selected { border-color:var(--charcoal); transform:scale(1.2); }
+
+        /* badge */
+        .bike-badge {
+            position:absolute; top:14px; left:16px;
+            font-size:10px; font-weight:500; letter-spacing:.18em; text-transform:uppercase;
+            padding:4px 10px; background:var(--black); color:var(--white);
+        }
+        .bike-badge.popular { background:var(--charcoal); }
+        .bike-badge.new { background:#2a4a3e; }
+
+        /* card body */
+        .bike-body { padding:28px 32px 32px; display:flex; flex-direction:column; flex:1; }
+        .bike-name { font-family:'Cormorant Garamond',serif; font-size:32px; font-weight:300; line-height:1; margin-bottom:4px; }
+        .bike-tagline { font-size:12px; color:var(--muted); margin-bottom:20px; letter-spacing:.04em; }
+
+        .bike-specs {
+            display:grid; grid-template-columns:repeat(3,1fr);
+            gap:12px; margin-bottom:20px;
+            padding-bottom:20px; border-bottom:1px solid var(--line);
+        }
+        .spec-item { }
+        .spec-v { font-family:'Cormorant Garamond',serif; font-size:22px; font-weight:400; color:var(--black); line-height:1; }
+        .spec-u { font-size:11px; }
+        .spec-k { font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--mid); margin-top:2px; }
+
+        /* colours row */
+        .colours-row { display:flex; align-items:center; gap:10px; margin-bottom:20px; }
+        .clr-label { font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--mid); }
+        .clr-name { font-size:12px; color:var(--muted); margin-left:auto; }
+
+        /* price + emi */
+        .price-row { display:flex; align-items:baseline; gap:8px; margin-bottom:6px; }
+        .price-main { font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:400; }
+        .price-note { font-size:11px; color:var(--mid); }
+        .emi-row { font-size:12px; color:var(--muted); margin-bottom:22px; }
+        .emi-row strong { color:var(--charcoal); font-weight:500; }
+
+        .bike-cta {
+            font-size:11px; font-weight:500; letter-spacing:.16em; text-transform:uppercase;
+            color:var(--black); background:transparent;
+            border:1px solid var(--charcoal);
+            padding:12px 0; text-align:center; cursor:pointer;
+            transition:background .2s, color .2s;
+            text-decoration:none; display:block; margin-top:auto;
+        }
+        .bike-cta:hover { background:var(--black); color:var(--white); }
+
+        /* ── FEATURES ── */
+        .feat-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:48px; margin-top:64px; }
+        .feat-num { font-family:'Cormorant Garamond',serif; font-size:11px; color:rgba(255,255,255,.15); letter-spacing:.2em; margin-bottom:16px; }
+        .feat-title { font-family:'Cormorant Garamond',serif; font-size:24px; font-weight:300; color:var(--white); margin-bottom:10px; }
+        .feat-desc { font-size:13px; line-height:1.8; color:rgba(255,255,255,.38); font-weight:300; }
+
+        /* ── EMI SECTION ── */
+        .emi-section { padding:100px 60px; }
+        .emi-grid { display:grid; grid-template-columns:1fr 1fr; gap:80px; align-items:center; margin-top:64px; }
+        .emi-table { width:100%; border-collapse:collapse; }
+        .emi-table th { font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:var(--mid); font-weight:400; text-align:left; padding:0 0 16px; border-bottom:1px solid var(--line); }
+        .emi-table td { font-size:14px; color:var(--charcoal); padding:16px 0; border-bottom:1px solid var(--line); font-weight:300; }
+        .emi-table td:first-child { font-family:'Cormorant Garamond',serif; font-size:18px; font-weight:400; }
+        .emi-table td strong { font-weight:500; color:var(--black); }
+        .emi-note { font-size:13px; line-height:1.85; color:var(--muted); font-weight:300; }
+        .emi-note p + p { margin-top:14px; }
+
+        /* ── CTA ── */
+        .cta-strip {
+            background:var(--black); padding:100px 60px;
+            display:grid; grid-template-columns:1fr auto; gap:60px; align-items:center;
+        }
+        .cta-strip h2 { font-family:'Cormorant Garamond',serif; font-size:clamp(40px,5vw,68px); font-weight:300; color:var(--white); line-height:1.05; }
+        .cta-strip h2 em { font-style:italic; color:rgba(255,255,255,.3); }
+        .cta-strip p { font-size:14px; color:rgba(255,255,255,.32); margin-top:16px; line-height:1.75; max-width:440px; }
+        .cta-btns { display:flex; flex-direction:column; gap:12px; align-items:flex-end; }
+        .btn-wht { font-size:12px; font-weight:500; letter-spacing:.14em; text-transform:uppercase; color:var(--black); background:var(--white); padding:16px 40px; border:none; cursor:pointer; white-space:nowrap; transition:background .2s; text-decoration:none; display:inline-block; }
+        .btn-wht:hover { background:var(--off); }
+        .btn-wht-ghost { font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:rgba(255,255,255,.4); text-decoration:none; transition:color .2s; }
+        .btn-wht-ghost:hover { color:var(--white); }
+
+        /* ── FOOTER ── */
+        footer { padding:40px 60px; border-top:1px solid var(--line); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px; }
+        .f-logo { font-family:'Cormorant Garamond',serif; font-size:18px; font-weight:500; letter-spacing:.18em; text-transform:uppercase; }
+        .f-logo em { font-style:normal; color:var(--mid); }
+        footer ul { list-style:none; display:flex; gap:28px; }
+        footer ul a { font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--mid); text-decoration:none; transition:color .2s; }
+        footer ul a:hover { color:var(--black); }
+        footer p { font-size:11px; color:var(--mid); }
+
+        /* ── REVEAL ── */
+        .reveal { opacity:0; transform:translateY(22px); transition:opacity .75s ease, transform .75s ease; }
+        .reveal.visible { opacity:1; transform:translateY(0); }
+        .d1{transition-delay:.1s} .d2{transition-delay:.2s} .d3{transition-delay:.3s} .d4{transition-delay:.4s}
+
+        /* ── RESPONSIVE ── */
+        @media(max-width:900px){
+            nav{padding:18px 20px;} nav ul{display:none;}
+            .hero{grid-template-columns:1fr;padding:100px 20px 70px;gap:36px;}
+            .hero::after{display:none;} .hero-right{background:var(--off);padding:28px;}
+            .hero-stats{left:20px;gap:24px;bottom:24px;}
+            .sec,.emi-section,.cta-strip{padding:72px 20px;}
+            .bikes-grid{grid-template-columns:1fr;}
+            .emi-grid{grid-template-columns:1fr;gap:40px;}
+            .cta-strip{grid-template-columns:1fr;gap:36px;} .cta-btns{align-items:flex-start;}
+            footer{padding:28px 20px;flex-direction:column;align-items:flex-start;} footer ul{display:none;}
+        }
+    </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="nav">
+    <a href="#" class="logo">Flash<em>Wheels</em></a>
+    <ul>
+        <li><a href="#bikes">Bikes</a></li>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#emi">Financing</a></li>
+        <li><a href="#contact" class="nav-cta">Enquire Now</a></li>
+    </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-left">
+        <div class="eyebrow">Electric Bikes · India</div>
+        <h1>Ride Clean.<br>Ride <em>Smart.</em></h1>
+        <p>5 premium electric bikes. Built for Indian roads, backed by 5-year warranty, and priced for every family.</p>
+        <div class="hero-btns">
+            <a href="#bikes" class="btn-solid">View All Bikes</a>
+            <a href="#emi" class="btn-ghost">EMI Options</a>
+        </div>
+    </div>
+    <div class="hero-right">
+        <!-- Clean line-art electric bike SVG -->
+        <svg class="hero-bike" viewBox="0 0 540 340" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="270" cy="328" rx="200" ry="10" fill="#141412" opacity="0.05"/>
+            <!-- Rear wheel -->
+            <circle cx="110" cy="265" r="70" stroke="#2E2E2C" stroke-width="7" fill="none"/>
+            <circle cx="110" cy="265" r="46" stroke="#E8E6E1" stroke-width="4" fill="none"/>
+            <circle cx="110" cy="265" r="11" fill="#2E2E2C"/>
+            <line x1="110" y1="219" x2="110" y2="311" stroke="#B8B6B0" stroke-width="2"/>
+            <line x1="64" y1="265" x2="156" y2="265" stroke="#B8B6B0" stroke-width="2"/>
+            <line x1="77" y1="232" x2="143" y2="298" stroke="#B8B6B0" stroke-width="2"/>
+            <line x1="143" y1="232" x2="77" y2="298" stroke="#B8B6B0" stroke-width="2"/>
+            <!-- Front wheel -->
+            <circle cx="430" cy="265" r="70" stroke="#2E2E2C" stroke-width="7" fill="none"/>
+            <circle cx="430" cy="265" r="46" stroke="#E8E6E1" stroke-width="4" fill="none"/>
+            <circle cx="430" cy="265" r="11" fill="#2E2E2C"/>
+            <line x1="430" y1="219" x2="430" y2="311" stroke="#B8B6B0" stroke-width="2"/>
+            <line x1="384" y1="265" x2="476" y2="265" stroke="#B8B6B0" stroke-width="2"/>
+            <line x1="397" y1="232" x2="463" y2="298" stroke="#B8B6B0" stroke-width="2"/>
+            <line x1="463" y1="232" x2="397" y2="298" stroke="#B8B6B0" stroke-width="2"/>
+            <!-- Frame -->
+            <path d="M110 265 L148 192 L270 172 L400 194 L430 265" stroke="#2E2E2C" stroke-width="5.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            <!-- Body panel -->
+            <path d="M270 172 L318 96 L392 86 L418 152 L418 206 L400 194 Z" fill="#F4F3F0" stroke="#2E2E2C" stroke-width="3.5"/>
+            <path d="M324 104 L388 94 L412 148 L400 194 L318 96 Z" fill="#E8E6E1"/>
+            <!-- Battery highlight -->
+            <rect x="175" y="196" width="100" height="20" rx="3" fill="#E8E6E1" stroke="#2E2E2C" stroke-width="2.5"/>
+            <!-- Step -->
+            <rect x="152" y="240" width="155" height="24" rx="4" fill="#E8E6E1" stroke="#2E2E2C" stroke-width="3"/>
+            <!-- Seat -->
+            <path d="M272 168 Q300 150 344 148 Q366 148 376 160 Q352 166 318 172 Z" fill="#2E2E2C"/>
+            <!-- Fork -->
+            <line x1="392" y1="86" x2="430" y2="210" stroke="#2E2E2C" stroke-width="5" stroke-linecap="round"/>
+            <!-- Stem -->
+            <line x1="392" y1="86" x2="394" y2="38" stroke="#2E2E2C" stroke-width="5.5" stroke-linecap="round"/>
+            <!-- Handlebar -->
+            <line x1="368" y1="34" x2="424" y2="34" stroke="#2E2E2C" stroke-width="8" stroke-linecap="round"/>
+            <rect x="366" y="28" width="17" height="13" rx="6" fill="#7A7872"/>
+            <rect x="421" y="28" width="17" height="13" rx="6" fill="#7A7872"/>
+            <!-- Headlight -->
+            <ellipse cx="432" cy="134" rx="15" ry="11" fill="#F4F3F0" stroke="#2E2E2C" stroke-width="3"/>
+            <ellipse cx="432" cy="134" rx="8" ry="6" fill="white" opacity="0.85"/>
+            <!-- FW badge -->
+            <text x="346" y="158" font-family="serif" font-size="9" fill="#B8B6B0" opacity="0.5" letter-spacing="2">FW</text>
+        </svg>
+    </div>
+    <div class="hero-stats">
+        <div><div class="stat-val">5 <span class="stat-unit">models</span></div><div class="stat-lbl">Available</div></div>
+        <div><div class="stat-val">160 <span class="stat-unit">km</span></div><div class="stat-lbl">Max Range</div></div>
+        <div><div class="stat-val">5 <span class="stat-unit">yr</span></div><div class="stat-lbl">Warranty</div></div>
+    </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker">
+    <div class="ticker-track">
+        <span class="ticker-item">Zero Emissions <span class="ticker-dot">·</span></span>
+        <span class="ticker-item">Smart App Control <span class="ticker-dot">·</span></span>
+        <span class="ticker-item">5-Year Warranty <span class="ticker-dot">·</span></span>
+        <span class="ticker-item">Doorstep Service <span class="ticker-dot">·</span></span>
+        <span class="ticker-item">Zero Cost EMI <span class="ticker-dot">·</span></span>
+        <span class="ticker-item">Fast Charging <span class="ticker-dot">·</span></span>
+        <span class="ticker-item">Made for India <span class="ticker-dot">·</span></span>
+        <span class="ticker-item">Zero Emissions <span class="ticker-dot">·</span></span>
+        <span class="ticker-item">Smart App Control <span class="ticker-dot">·</span></span>
+        <span class="ticker-item">5-Year Warranty <span class="ticker-dot">·</span></span>
+        <span class="ticker-item">Doorstep Service <span class="ticker-dot">·</span></span>
+        <span class="ticker-item">Zero Cost EMI <span class="ticker-dot">·</span></span>
+        <span class="ticker-item">Fast Charging <span class="ticker-dot">·</span></span>
+        <span class="ticker-item">Made for India <span class="ticker-dot">·</span></span>
+    </div>
+</div>
+
+<!-- BIKES CATALOGUE -->
+<section class="sec" id="bikes">
+    <div class="sec-hdr reveal">
+        <div>
+            <div class="sec-kicker">Our Collection</div>
+            <div class="sec-title">5 Electric Bikes.<br><em>One for Every Rider.</em></div>
+        </div>
+        <a href="#contact" class="btn-ghost" style="margin-bottom:6px">Book a Test Ride</a>
+    </div>
+
+    <div class="bikes-grid" id="bikesGrid">
+        <!-- Cards injected by JS -->
+    </div>
+</section>
+
+<!-- FEATURES -->
+<section class="sec sec-dark" id="features">
+    <div class="sec-hdr reveal">
+        <div>
+            <div class="sec-kicker">Technology</div>
+            <div class="sec-title">Built with <em>Precision.</em></div>
+        </div>
+    </div>
+    <div class="feat-grid">
+        <div class="reveal">
+            <div class="feat-num">01</div>
+            <div class="feat-title">Fast Charging</div>
+            <div class="feat-desc">0–80% in under 2 hours. Full charge costs less than ₹15 — saving thousands every year versus petrol.</div>
+        </div>
+        <div class="reveal d1">
+            <div class="feat-num">02</div>
+            <div class="feat-title">Smart App Control</div>
+            <div class="feat-desc">Monitor battery, range, and ride stats from your phone. Geo-fencing and OTA updates included.</div>
+        </div>
+        <div class="reveal d2">
+            <div class="feat-num">03</div>
+            <div class="feat-title">Advanced Braking</div>
+            <div class="feat-desc">Combined braking system with regenerative technology. Engineered for India's diverse road conditions.</div>
+        </div>
+        <div class="reveal d3">
+            <div class="feat-num">04</div>
+            <div class="feat-title">5-Year Warranty</div>
+            <div class="feat-desc">Industry-leading battery and motor warranty. We stand behind every bike we sell.</div>
+        </div>
+    </div>
+</section>
+
+<!-- EMI / FINANCING -->
+<section class="emi-section" id="emi">
+    <div class="sec-hdr reveal">
+        <div>
+            <div class="sec-kicker">Financing</div>
+            <div class="sec-title">Easy EMI for <em>Every Budget.</em></div>
+        </div>
+    </div>
+    <div class="emi-grid">
+        <div class="reveal">
+            <table class="emi-table">
+                <thead>
+                <tr>
+                    <th>Model</th>
+                    <th>Price</th>
+                    <th>EMI / Month</th>
+                    <th>Tenure</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr><td>City Glide</td><td>₹79,999</td><td><strong>₹2,499</strong></td><td>36 mo</td></tr>
+                <tr><td>Swift Pro</td><td>₹99,999</td><td><strong>₹2,999</strong></td><td>36 mo</td></tr>
+                <tr><td>Bolt X</td><td>₹1,24,999</td><td><strong>₹3,749</strong></td><td>36 mo</td></tr>
+                <tr><td>Thunder+</td><td>₹1,49,999</td><td><strong>₹4,499</strong></td><td>36 mo</td></tr>
+                <tr><td>Ultra Elite</td><td>₹1,79,999</td><td><strong>₹5,249</strong></td><td>36 mo</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="emi-note reveal d1">
+            <p>We offer <strong style="color:var(--black);font-weight:500">zero cost EMI</strong> on all models through leading banks including SBI, HDFC, ICICI, and Axis Bank.</p>
+            <p>No hidden charges. No processing fee. Choose from 12, 24, or 36-month tenures based on what works for your family.</p>
+            <p>Bring your Aadhaar, PAN, and last 3 months' bank statement for instant approval — often within 30 minutes at our showroom.</p>
+            <p style="margin-top:24px"><a href="#contact" class="btn-solid" style="display:inline-block">Check Eligibility</a></p>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-strip" id="contact">
+    <div>
+        <h2>Come See<br><em>Them in</em><br>Person.</h2>
+        <p>Visit our showroom for a hands-on test ride. No pressure, no commitment. Just you and the road.</p>
+    </div>
+    <div class="cta-btns">
+        <a href="tel:+919999999999" class="btn-wht">Call Us Now</a>
+        <a href="https://wa.me/919999999999" class="btn-wht-ghost" target="_blank">WhatsApp Enquiry →</a>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+    <div class="f-logo">Flash<em>Wheels</em></div>
+    <ul>
+        <li><a href="#bikes">Bikes</a></li>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#emi">Financing</a></li>
+        <li><a href="#contact">Contact</a></li>
+    </ul>
+    <p>© 2026 FlashWheels · flashwheels.in</p>
+</footer>
+
+<script>
+    // ── Bike Data ──
+    const bikes = [
+        {
+            name: "City Glide",
+            tagline: "Perfect for daily commutes",
+            badge: "Entry",
+            badgeClass: "",
+            range: "80 km",
+            speed: "55 km/h",
+            battery: "2.5 kW",
+            price: "₹79,999",
+            emi: "₹2,499/mo",
+            colours: [
+                { name: "Pearl White", hex: "#F0EFE8" },
+                { name: "Matte Black", hex: "#222220" },
+                { name: "Sky Blue", hex: "#8AAFC0" }
+            ],
+            accentFill: "#E8E6E1",
+            accentStroke: "#2E2E2C"
+        },
+        {
+            name: "Swift Pro",
+            tagline: "The everyday performer",
+            badge: "Popular",
+            badgeClass: "popular",
+            range: "100 km",
+            speed: "70 km/h",
+            battery: "3.5 kW",
+            price: "₹99,999",
+            emi: "₹2,999/mo",
+            colours: [
+                { name: "Graphite", hex: "#4A4A48" },
+                { name: "Cream", hex: "#EDE9E0" },
+                { name: "Forest Green", hex: "#3D5C4A" }
+            ],
+            accentFill: "#DDDBD5",
+            accentStroke: "#2E2E2C"
+        },
+        {
+            name: "Bolt X",
+            tagline: "Power meets elegance",
+            badge: "Best Value",
+            badgeClass: "",
+            range: "120 km",
+            speed: "85 km/h",
+            battery: "4.0 kW",
+            price: "₹1,24,999",
+            emi: "₹3,749/mo",
+            colours: [
+                { name: "Midnight", hex: "#1A1A18" },
+                { name: "Champagne", hex: "#D4C9A8" },
+                { name: "Steel", hex: "#8A9099" }
+            ],
+            accentFill: "#D8D6D0",
+            accentStroke: "#2E2E2C"
+        },
+        {
+            name: "Thunder+",
+            tagline: "Long-range city cruiser",
+            badge: "New",
+            badgeClass: "new",
+            range: "140 km",
+            speed: "90 km/h",
+            battery: "5.0 kW",
+            price: "₹1,49,999",
+            emi: "₹4,499/mo",
+            colours: [
+                { name: "Obsidian", hex: "#141412" },
+                { name: "Bronze", hex: "#8C6A3A" },
+                { name: "Glacier", hex: "#C8D5D8" }
+            ],
+            accentFill: "#E4E2DC",
+            accentStroke: "#2E2E2C"
+        },
+        {
+            name: "Ultra Elite",
+            tagline: "The pinnacle of electric riding",
+            badge: "Flagship",
+            badgeClass: "",
+            range: "160 km",
+            speed: "100 km/h",
+            battery: "6.0 kW",
+            price: "₹1,79,999",
+            emi: "₹5,249/mo",
+            colours: [
+                { name: "Ivory", hex: "#EDE8DC" },
+                { name: "Deep Black", hex: "#0E0E0C" },
+                { name: "Slate", hex: "#5C6068" }
+            ],
+            accentFill: "#EDEAE4",
+            accentStroke: "#2E2E2C"
+        }
+    ];
+
+    // ── Render Bike SVG ──
+    function bikeSVG(fill, stroke) {
+        return `<svg viewBox="0 0 320 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="160" cy="192" rx="120" ry="7" fill="#141412" opacity="0.05"/>
+    <circle cx="64" cy="158" r="44" stroke="${stroke}" stroke-width="5" fill="none"/>
+    <circle cx="64" cy="158" r="29" stroke="#E8E6E1" stroke-width="3" fill="none"/>
+    <circle cx="64" cy="158" r="7" fill="${stroke}"/>
+    <line x1="64" y1="129" x2="64" y2="187" stroke="#B8B6B0" stroke-width="1.5"/>
+    <line x1="35" y1="158" x2="93" y2="158" stroke="#B8B6B0" stroke-width="1.5"/>
+    <line x1="43" y1="137" x2="85" y2="179" stroke="#B8B6B0" stroke-width="1.5"/>
+    <line x1="85" y1="137" x2="43" y2="179" stroke="#B8B6B0" stroke-width="1.5"/>
+    <circle cx="256" cy="158" r="44" stroke="${stroke}" stroke-width="5" fill="none"/>
+    <circle cx="256" cy="158" r="29" stroke="#E8E6E1" stroke-width="3" fill="none"/>
+    <circle cx="256" cy="158" r="7" fill="${stroke}"/>
+    <line x1="256" y1="129" x2="256" y2="187" stroke="#B8B6B0" stroke-width="1.5"/>
+    <line x1="227" y1="158" x2="285" y2="158" stroke="#B8B6B0" stroke-width="1.5"/>
+    <line x1="235" y1="137" x2="277" y2="179" stroke="#B8B6B0" stroke-width="1.5"/>
+    <line x1="277" y1="137" x2="235" y2="179" stroke="#B8B6B0" stroke-width="1.5"/>
+    <path d="M64 158 L87 112 L160 98 L238 112 L256 158" stroke="${stroke}" stroke-width="4.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M160 98 L188 52 L230 46 L246 86 L246 118 L238 112 Z" fill="${fill}" stroke="${stroke}" stroke-width="3"/>
+    <path d="M190 56 L228 50 L244 84 L238 112 L188 52 Z" fill="#E8E6E1" opacity="0.6"/>
+    <rect x="90" y="136" width="94" height="16" rx="3" fill="#E8E6E1" stroke="${stroke}" stroke-width="2.5"/>
+    <path d="M161 95 Q178 82 204 80 Q218 80 224 90 Q208 95 188 99 Z" fill="${stroke}"/>
+    <line x1="230" y1="46" x2="246" y2="122" stroke="${stroke}" stroke-width="4" stroke-linecap="round"/>
+    <line x1="230" y1="46" x2="231" y2="18" stroke="${stroke}" stroke-width="4.5" stroke-linecap="round"/>
+    <line x1="214" y1="15" x2="250" y2="15" stroke="${stroke}" stroke-width="6" stroke-linecap="round"/>
+    <rect x="213" y="10" width="12" height="10" rx="5" fill="#7A7872"/>
+    <rect x="249" y="10" width="12" height="10" rx="5" fill="#7A7872"/>
+    <ellipse cx="248" cy="76" rx="10" ry="7" fill="${fill}" stroke="${stroke}" stroke-width="2.5"/>
+    <ellipse cx="248" cy="76" rx="5" ry="4" fill="white" opacity="0.8"/>
+  </svg>`;
+    }
+
+    // ── Render Cards ──
+    function renderBikes() {
+        const grid = document.getElementById('bikesGrid');
+        bikes.forEach((b, i) => {
+            const card = document.createElement('div');
+            card.className = 'bike-card reveal' + (i > 0 ? ' d' + Math.min(i,4) : '');
+
+            const dots = b.colours.map((c, ci) =>
+                `<div class="cdot ${ci===0?'selected':''}" style="background:${c.hex}" data-name="${c.name}" data-bike="${i}" data-idx="${ci}" title="${c.name}"></div>`
+            ).join('');
+
+            card.innerHTML = `
+      <div class="bike-img-wrap">
+        ${b.badge ? `<div class="bike-badge ${b.badgeClass}">${b.badge}</div>` : ''}
+        <div id="svg-${i}">${bikeSVG(b.accentFill, b.accentStroke)}</div>
+        <div class="colour-dots">${dots}</div>
+      </div>
+      <div class="bike-body">
+        <div class="bike-name">${b.name}</div>
+        <div class="bike-tagline">${b.tagline}</div>
+        <div class="bike-specs">
+          <div class="spec-item"><div class="spec-v">${b.range.split(' ')[0]}<span class="spec-u"> ${b.range.split(' ')[1]}</span></div><div class="spec-k">Range</div></div>
+          <div class="spec-item"><div class="spec-v">${b.speed.split(' ')[0]}<span class="spec-u"> ${b.speed.split(' ')[1]}</span></div><div class="spec-k">Top Speed</div></div>
+          <div class="spec-item"><div class="spec-v">${b.battery.split(' ')[0]}<span class="spec-u"> ${b.battery.split(' ')[1]}</span></div><div class="spec-k">Motor</div></div>
+        </div>
+        <div class="colours-row">
+          <span class="clr-label">Colours</span>
+          <div style="display:flex;gap:6px" id="clr-${i}">
+            ${b.colours.map((c,ci)=>`<div class="cdot ${ci===0?'selected':''}" style="background:${c.hex}" data-name="${c.name}" data-bike="${i}" data-idx="${ci}" title="${c.name}"></div>`).join('')}
+          </div>
+          <span class="clr-name" id="clrname-${i}">${b.colours[0].name}</span>
+        </div>
+        <div class="price-row"><span class="price-main">${b.price}</span><span class="price-note">onwards</span></div>
+        <div class="emi-row">EMI from <strong>${b.emi}</strong> · Zero cost</div>
+        <a href="#contact" class="bike-cta">Enquire / Book Test Ride</a>
+      </div>`;
+            grid.appendChild(card);
+        });
+
+        // colour dot click
+        document.querySelectorAll('.cdot').forEach(dot => {
+            dot.addEventListener('click', function() {
+                const bi = this.dataset.bike;
+                const idx = this.dataset.idx;
+                const b = bikes[bi];
+                // update selected state in both sets of dots
+                document.querySelectorAll(`[data-bike="${bi}"]`).forEach(d => d.classList.remove('selected'));
+                document.querySelectorAll(`[data-bike="${bi}"][data-idx="${idx}"]`).forEach(d => d.classList.add('selected'));
+                // update colour name
+                document.getElementById(`clrname-${bi}`).textContent = b.colours[idx].name;
+            });
+        });
+    }
+
+    renderBikes();
+
+    // Nav scroll
+    const nav = document.getElementById('nav');
+    window.addEventListener('scroll', () => nav.classList.toggle('scrolled', scrollY > 60));
+
+    // Scroll reveal
+    const obs = new IntersectionObserver(entries => {
+        entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('visible'); obs.unobserve(e.target); }});
+    }, {threshold:0.1});
+    document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+</script>
+</body>
+</html>
