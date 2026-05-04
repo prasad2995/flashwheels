@@ -77,6 +77,50 @@ const Cart = {
         this.updateCartUI();
     },
 
+    // Process checkout and create an order
+    checkout: function(customerDetails = {}) {
+        const cart = this.getCart();
+        if (cart.length === 0) {
+            this.showToast('Your cart is empty!');
+            return false;
+        }
+
+        // Fetch existing orders to maintain ID sequence matching the dashboard
+        let orders = JSON.parse(localStorage.getItem('fw_orders') || '[]');
+        let nextId = parseInt(localStorage.getItem('fw_nextId') || '1001');
+
+        // Format the cart items into a readable string for the dashboard notes
+        const itemsList = cart.map(item => `${item.name} (x${item.quantity || 1})`).join(', ');
+
+        // Create a new order object matching the dashboard.html structure
+        const newOrder = {
+            id: nextId++,
+            name: customerDetails.name || 'Guest User',
+            phone: customerDetails.phone || 'Pending',
+            email: customerDetails.email || '',
+            city: customerDetails.city || '',
+            model: 'Accessories & Parts', // Standardized model name for parts
+            colour: '-',
+            payment: customerDetails.payment || 'Online',
+            amount: this.getTotalPrice(),
+            address: customerDetails.address || '',
+            notes: `Items: ${itemsList}\nNotes: ${customerDetails.notes || ''}`,
+            status: 'New',
+            date: Date.now()
+        };
+
+        // Save the order to local storage (so it shows up in dashboard.html)
+        orders.push(newOrder);
+        localStorage.setItem('fw_orders', JSON.stringify(orders));
+        localStorage.setItem('fw_nextId', nextId);
+
+        // Clear the cart and notify the user
+        this.clearCart();
+        this.showToast('Order placed successfully! Order #' + newOrder.id);
+        
+        return true;
+    },
+
     // Update cart UI elements
     updateCartUI: function() {
         const count = this.getCartCount();
@@ -164,4 +208,3 @@ if (!document.getElementById('cart-animations')) {
 document.addEventListener('DOMContentLoaded', function() {
     Cart.updateCartUI();
 });
-

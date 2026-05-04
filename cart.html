@@ -40,7 +40,23 @@
 
         /* ── CART PAGE LAYOUT ── */
         .cart-wrapper { padding: 120px 60px 80px; max-width: 1400px; margin: 0 auto; }
-        .cart-header h1 { font-size: 36px; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.02em; }
+        .cart-header-title { display: flex; align-items: center; gap: 16px; margin-bottom: 8px; }
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--bg-light);
+            color: var(--black);
+            text-decoration: none;
+            font-size: 20px;
+            transition: all 0.2s;
+            border: 1px solid var(--border);
+        }
+        .back-link:hover { background: var(--black); color: var(--white); border-color: var(--black); }
+        .cart-header h1 { font-size: 36px; font-weight: 700; letter-spacing: -0.02em; }
         .cart-header p { font-size: 14px; color: var(--muted); margin-bottom: 40px; }
 
         /* ── CART CONTENT (2 COLUMN) ── */
@@ -237,6 +253,158 @@
             .empty-cart { padding: 40px 24px; }
             .empty-cart h2 { font-size: 20px; }
         }
+
+        /* ── CUSTOMER DETAILS FORM ── */
+        .form-grid { display: grid; grid-template-columns: 1fr; gap: 16px; margin-bottom: 8px; }
+        .form-group { display: flex; flex-direction: column; }
+        .form-lbl { font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+        .form-inp, .form-ta { width: 100%; padding: 12px 14px; border: 1px solid var(--border); background: var(--bg-light); border-radius: 6px; font-family: inherit; font-size: 14px; outline: none; transition: border-color 0.2s; color: var(--black); box-sizing: border-box; }
+        .form-inp:focus, .form-ta:focus { border-color: var(--black); }
+        .form-ta { min-height: 80px; resize: vertical; }
+        .btn-sm { background: var(--black); color: var(--white); border: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s; font-size: 14px; }
+        .btn-sm:hover { background: #333; }
+        .btn-sm-outline { background: transparent; color: var(--black); border: 1px solid var(--border); padding: 12px 24px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 14px; }
+        .btn-sm-outline:hover { border-color: var(--black); }
+        .error-text { color: #d32f2f; font-size: 11px; font-weight: 500; margin-top: 4px; display: none; }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            background: #FFFFFF;
+            border-radius: 12px;
+            padding: 0;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.3s ease;
+        }
+
+        .modal-header {
+            background: #E8E6E1;
+            padding: 20px 24px;
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            color: #141412;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .modal-close {
+            font-size: 28px;
+            cursor: pointer;
+            color: #141412;
+            transition: color 0.2s;
+        }
+
+        .modal-close:hover {
+            color: #666;
+        }
+
+        .modal-body {
+            padding: 24px;
+            text-align: center;
+        }
+
+        .success-icon {
+            font-size: 48px;
+            color: #4CAF50;
+            margin-bottom: 16px;
+        }
+
+        .modal-body p {
+            margin: 8px 0;
+            color: #141412;
+            font-size: 16px;
+        }
+
+        .modal-body p.order-id {
+            font-weight: 600;
+            color: #E8E6E1;
+            background: #141412;
+            padding: 8px 12px;
+            border-radius: 6px;
+            display: inline-block;
+            margin: 12px 0;
+        }
+
+        .modal-footer {
+            padding: 0 24px 24px;
+            text-align: center;
+        }
+
+        .modal-btn {
+            background: #141412;
+            color: #E8E6E1;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .modal-btn:hover {
+            background: #333;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* ── TOAST NOTIFICATION ── */
+        #toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--black);
+            color: var(--white);
+            padding: 14px 24px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            z-index: 9999;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            pointer-events: none;
+        }
+        #toast.show {
+            opacity: 1;
+            bottom: 40px;
+            pointer-events: auto;
+        }
     </style>
 </head>
 <body>
@@ -253,7 +421,10 @@
     <!-- CART PAGE -->
     <main class="cart-wrapper">
         <div class="cart-header">
-            <h1>Shopping Cart</h1>
+            <div class="cart-header-title">
+                <a href="bike-parts.html" class="back-link" title="Back to Bike Parts">←</a>
+                <h1>Shopping Cart</h1>
+            </div>
             <p id="cartItemCount">Your cart is empty</p>
         </div>
 
@@ -295,7 +466,53 @@
         </div>
     </main>
 
-    <!-- Cart Script -->
+    <!-- CUSTOMER DETAILS MODAL -->
+    <div class="modal-overlay" id="customerDetailsModal" style="display: none;">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h2>Delivery Details</h2>
+                <span class="modal-close" onclick="closeCustomerDetailsModal()">&times;</span>
+            </div>
+            <div class="modal-body" style="text-align: left;">
+                <div class="form-grid">
+                    <div class="form-group form-full">
+                        <label class="form-lbl">Full Name *</label>
+                        <input class="form-inp" id="customerName" placeholder="Your Name" required maxlength="30">
+                    </div>
+                    <div class="form-group form-full">
+                        <label class="form-lbl">Mobile Number *</label>
+                        <input class="form-inp" id="customerPhone" type="tel" placeholder="9876543210" required maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
+                    </div>
+                    <div class="form-group form-full">
+                        <label class="form-lbl">Email ID *</label>
+                        <input class="form-inp" id="customerEmail" type="email" placeholder="email@example.com" required oninput="document.getElementById('emailError').style.display='none';">
+                        <div id="emailError" class="error-text">Please enter a valid email address.</div>
+                    </div>
+                    <div class="form-group form-full">
+                        <label class="form-lbl">Address *</label>
+                        <textarea class="form-ta" id="customerAddress" placeholder="Delivery Address" required></textarea>
+                    </div>
+                    <div class="form-group form-full">
+                        <label class="form-lbl">City *</label>
+                        <input class="form-inp" id="customerCity" placeholder="Your City" required>
+                    </div>
+                    <div class="form-group form-full">
+                        <label class="form-lbl">Pincode *</label>
+                        <input class="form-inp" id="customerPincode" type="text" placeholder="123456" required maxlength="6" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 12px; padding-top: 16px;">
+                <button class="btn-sm-outline" onclick="closeCustomerDetailsModal()">Cancel</button>
+                <button class="btn-sm" onclick="confirmOrder()">Confirm Order</button>
+            </div>
+        </div>
+    </div>
+
+   <!-- TOAST NOTIFICATION ELEMENT -->
+   <div id="toast"></div>
+
+   <!-- Cart Script -->
     <script src="cart.js"></script>
 
     <!-- Firebase SDK (Compat Version) -->
@@ -345,15 +562,18 @@
                 taxEl.textContent = '₹0';
                 totalEl.textContent = '₹0';
                 checkoutBtn.disabled = true;
+                checkoutBtn.textContent = 'Proceed to Checkout';
                 return;
             }
 
             // Enable checkout button
             checkoutBtn.disabled = false;
+            checkoutBtn.textContent = 'Proceed to Checkout';
 
             // Update cart count
             const totalItems = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
             cartCount.textContent = `${totalItems} item${totalItems !== 1 ? 's' : ''} in your cart`;
+            if(document.getElementById('cartCount')) document.getElementById('cartCount').textContent = totalItems;
 
             // Render items
             cartList.innerHTML = cart.map(item => {
@@ -409,7 +629,7 @@
             Cart.showToast('Item removed from cart', 2000);
         }
 
-        // Handle checkout
+        // 1. Open Customer Details Modal on Checkout
         function handleCheckout() {
             const cart = Cart.getCart();
             if (cart.length === 0) {
@@ -417,27 +637,106 @@
                 return;
             }
 
-            // Check if user is authenticated
-            if (!auth.currentUser) {
-                Cart.showToast('Please login to place an order', 2000);
-                window.location.href = 'index.html';
+            document.getElementById('customerDetailsModal').style.display = 'flex';
+            
+            // Pre-fill previously entered data if any
+            document.getElementById('customerName').value = localStorage.getItem('customerName') || '';
+            document.getElementById('customerPhone').value = localStorage.getItem('customerPhone') || '';
+            document.getElementById('customerEmail').value = localStorage.getItem('customerEmail') || '';
+            document.getElementById('customerAddress').value = localStorage.getItem('customerAddress') || '';
+            document.getElementById('customerCity').value = localStorage.getItem('customerCity') || '';
+            document.getElementById('customerPincode').value = localStorage.getItem('customerPincode') || '';
+            document.getElementById('emailError').style.display = 'none';
+        }
+
+        // 2. Close Customer Details Modal
+        function closeCustomerDetailsModal() {
+            document.getElementById('customerDetailsModal').style.display = 'none';
+        }
+
+        // 3. Validate and Confirm Order
+        function confirmOrder() {
+            const name = document.getElementById('customerName').value.trim();
+            const phone = document.getElementById('customerPhone').value.trim();
+            const email = document.getElementById('customerEmail').value.trim();
+            const address = document.getElementById('customerAddress').value.trim();
+            const city = document.getElementById('customerCity').value.trim();
+            const pincode = document.getElementById('customerPincode').value.trim();
+
+            // --- VALIDATIONS ---
+            if (!name || !phone || !email || !address || !city || !pincode) {
+                Cart.showToast('Please fill in all mandatory customer details.', 3000);
                 return;
             }
 
-            // Show loading state
+            // Phone number validation (exactly 10 digits)
+            const phoneRegex = /^\d{10}$/;
+            if (!phoneRegex.test(phone)) {
+                Cart.showToast('Please enter a valid 10-digit mobile number.', 3000);
+                return;
+            }
+
+            // Email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                document.getElementById('emailError').style.display = 'block';
+                return;
+            }
+
+            // Pincode validation (exactly 6 digits)
+            const pincodeRegex = /^\d{6}$/;
+            if (!pincodeRegex.test(pincode)) {
+                Cart.showToast('Please enter a valid 6-digit pincode.', 3000);
+                return;
+            }
+
+            // Store customer details for convenience next time
+            localStorage.setItem('customerName', name);
+            localStorage.setItem('customerPhone', phone);
+            localStorage.setItem('customerEmail', email);
+            localStorage.setItem('customerAddress', address);
+            localStorage.setItem('customerCity', city);
+            localStorage.setItem('customerPincode', pincode);
+
+            closeCustomerDetailsModal();
+            processOrder({ name, phone, email, address, city, pincode });
+        }
+
+        // 4. Process the order and save to Firestore/Dashboard
+        function processOrder(customer) {
+            const cart = Cart.getCart();
             const checkoutBtn = document.getElementById('checkoutBtn');
             const originalText = checkoutBtn.textContent;
             checkoutBtn.disabled = true;
             checkoutBtn.textContent = 'Processing Order...';
 
-            // Create order object
             const subtotal = Cart.getTotalPrice();
             const tax = Math.round(subtotal * 0.18);
             const total = subtotal + tax;
 
+            // Generate a readable order number (matches dashboard sequence)
+            let nextId = parseInt(localStorage.getItem('fw_nextId') || '1001');
+            const orderNumber = nextId;
+            localStorage.setItem('fw_nextId', nextId + 1);
+
+            const itemsList = cart.map(item => `${item.name} (x${item.quantity || 1})`).join(', ');
+
             const order = {
-                userId: auth.currentUser.uid,
-                userEmail: auth.currentUser.email,
+                id: orderNumber, // Matches standard dashboard local ID
+                orderId: orderNumber,
+                name: customer.name,
+                phone: customer.phone,
+                email: customer.email,
+                city: customer.city,
+                pincode: customer.pincode,
+                address: customer.address,
+                model: 'Accessories & Parts', // Standardized for Dashboard
+                colour: '-',
+                payment: 'Online',
+                amount: total,
+                notes: `Items: ${itemsList}`,
+                status: 'New', // New, Dispatched, Delivered, Cancelled
+                date: Date.now(),
                 items: cart.map(item => ({
                     id: item.id,
                     name: item.name,
@@ -448,7 +747,6 @@
                 subtotal: subtotal,
                 tax: tax,
                 total: total,
-                status: 'New', // New, Dispatched, Delivered, Cancelled
                 createdAt: firebase.firestore.Timestamp.now(),
                 updatedAt: firebase.firestore.Timestamp.now()
             };
@@ -456,15 +754,23 @@
             // Save to Firestore
             db.collection('orders').add(order)
                 .then((docRef) => {
-                    console.log('Order created with ID:', docRef.id);
+                    console.log('Order created with Firestore ID:', docRef.id, '| Order Number:', orderNumber);
+                    
+                    // Also save to fw_orders local storage so it instantly appears in the Admin Dashboard!
+                    let fw_orders = JSON.parse(localStorage.getItem('fw_orders') || '[]');
+                    fw_orders.push(order);
+                    localStorage.setItem('fw_orders', JSON.stringify(fw_orders));
+
                     Cart.showToast('✓ Order placed successfully!', 2000);
 
                     // Clear cart and redirect after a short delay
                     setTimeout(() => {
                         Cart.clearCart();
                         renderCart();
-                        alert('Thank you for your order! Order ID: ' + docRef.id + '\n\nCheck the dashboard to view your order status.');
-                        window.location.href = 'dashboard.html';
+                        document.getElementById('modalOrderId').textContent = '#' + orderNumber;
+                        document.getElementById('orderModal').style.display = 'flex';
+                        // Stay on cart page instead of redirecting
+                        checkoutBtn.textContent = originalText;
                     }, 1000);
                 })
                 .catch((error) => {
@@ -475,10 +781,42 @@
                 });
         }
 
+        function closeOrderModal() {
+            document.getElementById('orderModal').style.display = 'none';
+        }
+
         // Initial render
         renderCart();
-    </script>
 
+
+    </script>
+    <!-- Order Confirmation Modal -->
+    <div id="orderModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Order Confirmed!</h2>
+                <span class="modal-close" onclick="closeOrderModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="success-icon">✓</div>
+                <p>Thank you for your order!</p>
+                <p class="order-id">Order ID: <span id="modalOrderId"></span></p>
+                <p>You can check order status in the home page.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn" onclick="closeOrderModal()">Continue Shopping</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Close modal when clicking outside
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('orderModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeOrderModal();
+                }
+            });
+        });
+    </script>
 </body>
 </html>
-

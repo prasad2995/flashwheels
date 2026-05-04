@@ -809,21 +809,23 @@
             orders = snapshot.docs.map(doc => {
                 const data = doc.data();
                 return {
-                    id: doc.id,
-                    name: data.userEmail?.split('@')[0] || 'Customer',
-                    email: data.userEmail,
-                    phone: '',
-                    model: data.items?.map(i => i.name).join(', ') || 'Parts Order',
-                    colour: '',
-                    amount: data.total || 0,
-                    payment: 'Full Payment',
+                    id: data.orderId || doc.id,
+                    name: data.name || data.userEmail?.split('@')[0] || 'Customer',
+                    email: data.email || data.userEmail || '—',
+                    phone: data.phone || '—',
+                    model: data.model || data.items?.map(i => i.name).join(', ') || 'Parts Order',
+                    colour: data.colour || '-',
+                    amount: data.amount || data.total || 0,
+                    payment: data.payment || 'Online',
                     status: data.status || 'New',
-                    date: data.createdAt?.toDate?.().getTime() || Date.now(),
+                    date: data.date || data.createdAt?.toDate?.().getTime() || Date.now(),
                     items: data.items || [],
                     subtotal: data.subtotal || 0,
                     tax: data.tax || 0,
-                    address: '',
-                    notes: '',
+                    address: data.address || '',
+                    city: data.city || '',
+                    pincode: data.pincode || '',
+                    notes: data.notes || '',
                     // Store original Firebase data
                     _firebaseData: data,
                     _docId: doc.id
@@ -1022,7 +1024,7 @@
         const newStatus = document.getElementById('detailStatusSel').value;
 
         // Update in Firestore
-        db.collection('orders').doc(currentOrderId).update({
+        db.collection('orders').doc(o._docId).update({
             status: newStatus,
             updatedAt: firebase.firestore.Timestamp.now()
         }).then(() => {
@@ -1048,7 +1050,10 @@
     function deleteOrder(id) {
         if(!confirm('Delete this order?')) return;
 
-        db.collection('orders').doc(id).delete()
+        const o = orders.find(x=>String(x.id)===String(id));
+        if(!o) return;
+
+        db.collection('orders').doc(o._docId).delete()
             .then(() => {
                 orders = orders.filter(o=>String(o.id)!==String(id));
                 save();

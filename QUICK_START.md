@@ -2,6 +2,12 @@
 
 ## 🎯 How It Works - The Complete Flow
 
+### ⚙️ Prerequisites & Setup
+- Local Web Server (e.g., Live Server extension or WebStorm default server).
+- Firebase Project with **Firestore** and **Authentication** enabled.
+- Ensure your `firebaseConfig` object is correctly populated in your HTML/JS files.
+- An admin user created in Firebase Authentication (e.g., `admin@flashwheels.com`).
+
 ### Step 1️⃣: Customer Adds Parts to Cart
 **Location:** `bike-parts.html`
 - Browse bike parts and accessories
@@ -207,4 +213,3 @@ Key responsive features:
 **Last Updated:** May 4, 2026
 **Framework:** Vanilla JavaScript + Firebase
 **Browser Support:** Chrome, Firefox, Safari, Edge (latest versions)
-
