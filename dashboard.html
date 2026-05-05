@@ -111,11 +111,12 @@
         .topbar-right { display:flex; align-items:center; gap:14px; }
         .topbar-date { font-size:12px; color:var(--muted); letter-spacing:.04em; }
 
-        .content { flex:1; overflow-y:auto; padding:32px 36px; }
+        .content { flex:1; overflow-y:auto; padding:32px 36px; display:flex; flex-direction:column; }
 
         /* ─── VIEWS ─── */
         .view { display:none; }
-        .view.active { display:block; }
+        .view.active { display:block; flex:1; }
+        .tech-credit { text-align:center; font-size:11px; color:var(--muted); margin-top:auto; padding-top:32px; letter-spacing:.04em; }
 
         /* ─── STATS ROW ─── */
         .stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:28px; }
@@ -246,7 +247,7 @@
         /* ─── RESPONSIVE ─── */
         @media(max-width:768px){
             .mobile-menu-btn { display:block; }
-            
+
             /* SIDEBAR */
             .sidebar{
                 position:fixed;
@@ -267,10 +268,10 @@
             .sb-icon{font-size:12px;width:16px;}
             .sb-badge{font-size:9px;padding:1px 5px;}
             .sb-bottom{padding:16px; padding-bottom:calc(16px + env(safe-area-inset-bottom, 0px));}
-             .sb-user{flex-wrap:nowrap; gap:8px; min-height:32px; align-items:center;}
-             .sb-avatar{width:28px;height:28px;font-size:11px; flex-shrink:0;}
-             .sb-uname{font-size:11px; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
-             .sb-logout{font-size:10px; margin-left:auto; padding:4px 8px; background:rgba(255,255,255,.1); border-radius:4px; transition:all .15s; flex-shrink:0;}
+            .sb-user{flex-wrap:nowrap; gap:8px; min-height:32px; align-items:center;}
+            .sb-avatar{width:28px;height:28px;font-size:11px; flex-shrink:0;}
+            .sb-uname{font-size:11px; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+            .sb-logout{font-size:10px; margin-left:auto; padding:4px 8px; background:rgba(255,255,255,.1); border-radius:4px; transition:all .15s; flex-shrink:0;}
 
             /* MAIN */
             #app{overflow-x:hidden;}
@@ -330,12 +331,12 @@
             table { display: block; width: 100%; margin-top: 12px; }
             thead { display: none; }
             tbody { display: block; width: 100%; }
-            tbody tr { 
-                display: block; 
-                background: var(--white); 
-                border: 1px solid var(--line); 
-                margin-bottom: 12px; 
-                padding: 12px; 
+            tbody tr {
+                display: block;
+                background: var(--white);
+                border: 1px solid var(--line);
+                margin-bottom: 12px;
+                padding: 12px;
             }
             tbody tr:hover { background: var(--white); }
             tbody td {
@@ -587,10 +588,16 @@
                             </div>
                             <div class="form-group"><label class="form-lbl">Serial No *</label><input class="form-inp" id="pSerial" placeholder="e.g. PRT-1001"></div>
                             <div class="form-group"><label class="form-lbl">Item Name *</label><input class="form-inp" id="pItem" placeholder="e.g. Carbon Brake Pad"></div>
-                            <div class="form-group"><label class="form-lbl">Image URL</label><input class="form-inp" id="pImage" placeholder="https://..."></div>
+                            <div class="form-group">
+                                <label class="form-lbl">Part Image (Max 500KB) *</label>
+                                <input type="file" class="form-inp" id="pImageFile" accept="image/*" style="padding: 6px; cursor: pointer;">
+                                <small style="font-size: 11px; color: var(--muted); display: block; margin-top: 4px;" id="imageStatus">No image selected</small>
+                            </div>
                             <div class="form-group"><label class="form-lbl">Basic Price (₹) *</label><input class="form-inp" id="pPrice" type="number" placeholder="0"></div>
-                            <div class="form-group" style="display:flex; align-items:flex-end;">
-                                <button class="btn-sm" style="width:100%; height:41px;" onclick="savePart()">Save Part</button>
+                            <div class="form-group"><label class="form-lbl">Discount (%)</label><input class="form-inp" id="pDiscount" type="number" placeholder="0" min="0" max="100"></div>
+                            <div class="form-group" style="display:flex; flex-direction:row; align-items:flex-end; gap: 8px;">
+                                <button class="btn-sm-outline" id="cancelEditBtn" style="flex:1; height:41px; visibility:hidden;" onclick="resetPartForm()">Cancel</button>
+                                <button class="btn-sm" style="flex:1; height:41px;" onclick="savePart()">Save Part</button>
                             </div>
                         </div>
                     </div>
@@ -600,12 +607,14 @@
                     <div class="table-hdr"><div class="table-hdr-title">Configured Parts</div></div>
                     <table>
                         <thead><tr>
-                            <th>Serial No</th><th>Model</th><th>Item</th><th>Image</th><th>Price</th><th>Actions</th>
-                        </tr></thead>
+                            <th>Serial No</th><th>Model</th><th>Item</th><th>Image</th><th>Price</th><th>Discount</th><th>Discounted Price</th><th>Actions</th></tr></thead><thead><tr>
+                    </tr></thead>
                         <tbody id="partsTbody"></tbody>
                     </table>
                 </div>
             </div>
+
+            <div class="tech-credit">Designed and developed by Punnam Tech Solutions Pvt Ltd.</div>
 
         </div><!-- /content -->
     </div><!-- /main -->
@@ -739,11 +748,6 @@
     let currentOrderId = null;
     let currentUser = null;
 
-    function save() {
-        localStorage.setItem('fw_nextId', nextId);
-        // Orders are now saved directly to Firestore in updateStatus and other functions
-    }
-
     // ── Auth State Listener ──
     auth.onAuthStateChanged(user => {
         if (user) {
@@ -796,7 +800,7 @@
         fetchParts();
         fetchOrders();
     }
-    
+
     function fetchParts() {
         db.collection('parts').onSnapshot(snapshot => {
             parts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -955,15 +959,19 @@
         const price = val.split('|')[1];
         document.getElementById('fAmount').value = '₹' + parseInt(price).toLocaleString('en-IN');
     }
-    function saveOrder() {
+    async function saveOrder() {
         const name = document.getElementById('fName').value.trim();
         const phone = document.getElementById('fPhone').value.trim();
         const modelRaw = document.getElementById('fModel').value;
         if(!name||!phone||!modelRaw) { showToast('Please fill required fields.'); return; }
         const [model, priceStr] = modelRaw.split('|');
-        const order = {
-            id: nextId++,
-            name, phone,
+
+        const orderId = nextId++; // Get current ID and prepare next one
+
+        const orderData = {
+            orderId: orderId,
+            name,
+            phone,
             email: document.getElementById('fEmail').value.trim(),
             city: document.getElementById('fCity').value.trim(),
             model,
@@ -973,13 +981,20 @@
             address: document.getElementById('fAddress').value.trim(),
             notes: document.getElementById('fNotes').value.trim(),
             status: 'New',
-            date: Date.now()
+            date: Date.now(),
+            createdAt: firebase.firestore.Timestamp.now()
         };
-        orders.push(order);
-        save();
-        closeAddModal();
-        refreshAll();
-        showToast(`Order #${order.id} added successfully.`);
+
+        try {
+            await db.collection('orders').add(orderData);
+            localStorage.setItem('fw_nextId', nextId); // Persist the incremented counter
+            closeAddModal();
+            showToast(`Order #${orderId} added successfully.`);
+        } catch (error) {
+            console.error("Error adding order: ", error);
+            showToast('Error adding order.');
+            nextId--; // Rollback counter on failure
+        }
     }
 
     // ── Detail Modal ──
@@ -1028,11 +1043,8 @@
             status: newStatus,
             updatedAt: firebase.firestore.Timestamp.now()
         }).then(() => {
-            o.status = newStatus;
-            save();
-            refreshAll();
             closeDetailModal();
-            showToast(`Order updated to "${newStatus}".`);
+            showToast(`Order #${o.id} updated to "${newStatus}".`);
         }).catch(error => {
             console.error('Error updating status:', error);
             showToast('Error updating order status.');
@@ -1055,10 +1067,7 @@
 
         db.collection('orders').doc(o._docId).delete()
             .then(() => {
-                orders = orders.filter(o=>String(o.id)!==String(id));
-                save();
-                refreshAll();
-                showToast('Order deleted.');
+                showToast(`Order #${id} deleted.`);
             })
             .catch(error => {
                 console.error('Error deleting order:', error);
@@ -1071,44 +1080,163 @@
         const tb = document.getElementById('partsTbody');
         if(!tb) return;
         if(parts.length === 0) {
-            tb.innerHTML = `<tr class="empty-tr"><td colspan="6" style="padding:48px;text-align:center;color:var(--mid);font-size:13px;border:none;">No parts configured.</td></tr>`;
+            tb.innerHTML = `<tr class="empty-tr"><td colspan="8" style="padding:48px;text-align:center;color:var(--mid);font-size:13px;border:none;">No parts configured.</td></tr>`;
             return;
         }
-        tb.innerHTML = parts.map((p, i) => `
+        tb.innerHTML = parts.map((p, i) => {
+            const discount = Number(p.discount) || 0;
+            const price = Number(p.price) || 0;
+            const discountedPrice = price - (price * discount / 100);
+            return `
             <tr>
                 <td data-label="Serial No" class="td-id">${p.serial}</td>
                 <td data-label="Model">${p.model}</td>
                 <td data-label="Item" class="td-name">${p.item}</td>
                 <td data-label="Image">${p.image ? `<img src="${p.image}" alt="Img" style="height:32px;width:32px;border-radius:4px;object-fit:cover;">` : '—'}</td>
-                <td data-label="Price">₹${Number(p.price).toLocaleString('en-IN')}</td>
-                <td data-label="Actions"><button class="act-btn act-btn-del" onclick="deletePart('${p.id}')">Delete</button></td>
+                <td data-label="Price">₹${price.toLocaleString('en-IN')}</td>
+                <td data-label="Discount">${discount > 0 ? discount + '%' : '—'}</td>
+                <td data-label="Discounted Price"><strong>₹${discountedPrice.toLocaleString('en-IN')}</strong></td><td>
+                     <div class="action-btns">
+                         <button class="act-btn" onclick="editPart('${p.id}')">Edit</button>
+                         <button class="act-btn act-btn-del" onclick="deletePart('${p.id}')">Delete</button>
+                     </div>
+                 </td>
             </tr>
-        `).join('');
+        `;
+        }).join('');
     }
+
+    let base64Image = '';
+
+    document.getElementById('pImageFile')?.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        const statusEl = document.getElementById('imageStatus');
+        
+        if (!file) {
+            statusEl.textContent = 'No image selected';
+            base64Image = '';
+            return;
+        }
+
+        if (!file.type.startsWith('image/')) {
+            showToast('Please select a valid image file.');
+            e.target.value = '';
+            statusEl.textContent = 'No image selected';
+            return;
+        }
+
+        if (file.size > 512000) { // 500KB limit for Firestore doc size safety
+            showToast('Image size must be less than 500KB.');
+            e.target.value = '';
+            statusEl.textContent = 'No image selected';
+            return;
+        }
+
+        statusEl.textContent = 'Processing image...';
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            base64Image = event.target.result;
+            statusEl.textContent = 'Image ready ✓';
+        };
+        reader.readAsDataURL(file);
+    });
 
     function savePart() {
         const model = document.getElementById('pModel').value;
         const serial = document.getElementById('pSerial').value.trim();
         const item = document.getElementById('pItem').value.trim();
-        const image = document.getElementById('pImage').value.trim();
         const price = document.getElementById('pPrice').value.trim();
+        const discount = document.getElementById('pDiscount').value.trim();
 
-        if(!model || !serial || !item || !price) { showToast('Please fill all required part fields.'); return; }
-        
-        db.collection('parts').add({ model, serial, item, image, price })
-            .then(() => {
-                ['pSerial', 'pItem', 'pImage', 'pPrice'].forEach(id => document.getElementById(id).value = '');
-                showToast('Part added successfully.');
-            })
-            .catch(error => {
-                console.error("Error adding part:", error);
-                showToast('Error adding part.');
-            });
+        if(!model || !serial || !item || !price || !base64Image) {
+            showToast('Please fill all required fields and select an image.');
+            return;
+        }
+
+        const partData = {
+            model,
+            serial,
+            item,
+            image: base64Image,
+            price,
+            discount: discount || '0'
+        };
+
+        const btn = document.querySelector('button[onclick="savePart()"]');
+        if (btn) {
+            btn.textContent = editingPartId ? 'Updating...' : 'Saving...';
+            btn.disabled = true;
+        }
+
+        if (editingPartId) {
+            // Update Existing Part
+            db.collection('parts').doc(editingPartId).update(partData)
+                .then(() => {
+                    showToast('Part updated successfully.');
+                    resetPartForm();
+                })
+                .catch(error => {
+                    console.error("Error updating part:", error);
+                    showToast('Error updating part.');
+                })
+                .finally(() => { if (btn) { btn.textContent = 'Save Part'; btn.disabled = false; } });
+        } else {
+            // Add New Part
+            db.collection('parts').add(partData)
+                .then(() => {
+                    showToast('Part added successfully.');
+                    resetPartForm();
+                })
+                .catch(error => {
+                    console.error("Error adding part:", error);
+                    showToast('Error adding part.');
+                })
+                .finally(() => { if (btn) { btn.textContent = 'Save Part'; btn.disabled = false; } });
+        }
+    }
+
+    function resetPartForm() {
+        ['pSerial', 'pItem', 'pPrice', 'pDiscount'].forEach(id => document.getElementById(id).value = '');
+        document.getElementById('pModel').selectedIndex = 0;
+        document.getElementById('pImageFile').value = '';
+        document.getElementById('imageStatus').textContent = 'No image selected';
+        base64Image = '';
+        editingPartId = null;
+
+        const btn = document.querySelector('button[onclick="savePart()"]');
+        if (btn) btn.textContent = 'Save Part';
+
+        const cancelBtn = document.getElementById('cancelEditBtn');
+        if (cancelBtn) cancelBtn.style.visibility = 'hidden';
+    }
+
+    function editPart(partId) {
+        const part = parts.find(p => p.id === partId);
+        if (!part) return;
+
+        editingPartId = partId;
+        document.getElementById('pModel').value = part.model;
+        document.getElementById('pSerial').value = part.serial;
+        document.getElementById('pItem').value = part.item;
+        document.getElementById('pPrice').value = part.price;
+        document.getElementById('pDiscount').value = part.discount || '0';
+
+        base64Image = part.image || '';
+        document.getElementById('imageStatus').textContent = part.image ? 'Existing image retained ✓' : 'No image selected';
+
+        const btn = document.querySelector('button[onclick="savePart()"]');
+        if (btn) btn.textContent = 'Update Part';
+
+        const cancelBtn = document.getElementById('cancelEditBtn');
+        if (cancelBtn) cancelBtn.style.visibility = 'visible';
+
+        // Scroll smoothly to the form so the user can easily see they are editing
+        document.querySelector('.content').scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function deletePart(partId) {
         if(!confirm('Delete this part?')) return;
-        
+
         db.collection('parts').doc(partId).delete()
             .then(() => showToast('Part deleted.'))
             .catch(error => showToast('Error deleting part.'));
@@ -1116,8 +1244,13 @@
 
     function exportPartsCSV() {
         if(parts.length === 0) { showToast('No parts to export.'); return; }
-        const rows = [['Serial No', 'Bike Model', 'Item Name', 'Image URL', 'Basic Price']];
-        parts.forEach(p => rows.push([`"${p.serial}"`, `"${p.model}"`, `"${p.item}"`, `"${p.image}"`, `"${p.price}"`]));
+        const rows = [['Serial No', 'Bike Model', 'Item Name', 'Basic Price', 'Discount (%)', 'Discounted Price']];
+        parts.forEach(p => {
+            const discount = Number(p.discount) || 0;
+            const price = Number(p.price) || 0;
+            const discountedPrice = price - (price * discount / 100);
+            rows.push([`"${p.serial}"`, `"${p.model}"`, `"${p.item}"`, `"${price}"`, `"${discount}"`, `"${discountedPrice}"`]);
+        });
         const blob = new Blob([rows.map(r => r.join(',')).join('\n')], { type: 'text/csv' });
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
@@ -1136,10 +1269,17 @@
             for(let i=1; i<lines.length; i++) { // Skip header
                 if(!lines[i].trim()) continue;
                 const row = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.replace(/(^"|"$)/g, '').trim());
-                if(row.length >= 5) { 
+                if(row.length >= 4) {
                     const partRef = db.collection('parts').doc();
-                    batch.set(partRef, { serial: row[0], model: row[1], item: row[2], image: row[3], price: row[4] }); 
-                    count++; 
+                    batch.set(partRef, {
+                        serial: row[0],
+                        model: row[1],
+                        item: row[2],
+                        image: '',
+                        price: row[3],
+                        discount: row[4] || '0'
+                    });
+                    count++;
                 }
             }
             try {
@@ -1154,35 +1294,13 @@
         reader.readAsText(file);
     }
 
-    // ── Toast ──
+    // ── Toast Notification ──
     function showToast(msg) {
         const t = document.getElementById('toast');
+        if(!t) return;
         t.textContent = msg;
         t.classList.add('show');
-        setTimeout(()=>t.classList.remove('show'),3000);
-    }
-
-    // close modals on overlay click
-    document.querySelectorAll('.modal-overlay').forEach(overlay => {
-        overlay.addEventListener('click', e => {
-            if(e.target===overlay) {
-                overlay.classList.remove('open');
-                currentOrderId = null;
-            }
-        });
-    });
-
-    // ── Seed sample data if empty ──
-    if(orders.length === 0) {
-        const samples = [
-            {name:'Ravi Kumar',phone:'9876543210',email:'ravi@gmail.com',city:'Bengaluru',model:'Bolt X',colour:'Midnight',payment:'EMI – 36 months',amount:124999,address:'12, MG Road, Bengaluru',notes:'',status:'New',date:Date.now()-86400000*1},
-            {name:'Priya Reddy',phone:'9123456780',email:'priya@gmail.com',city:'Hyderabad',model:'Swift Pro',colour:'Forest Green',payment:'Full Payment',amount:99999,address:'45, Jubilee Hills, Hyderabad',notes:'Wants green colour only',status:'Confirmed',date:Date.now()-86400000*2},
-            {name:'Anil Sharma',phone:'9988776655',email:'',city:'Vijayawada',model:'City Glide',colour:'Pearl White',payment:'EMI – 24 months',amount:79999,address:'7, Eluru Road, Vijayawada',notes:'',status:'Dispatched',date:Date.now()-86400000*4},
-            {name:'Lakshmi Devi',phone:'9765432100',email:'lakshmi@example.com',city:'Visakhapatnam',model:'Ultra Elite',colour:'Ivory',payment:'Full Payment',amount:179999,address:'22, Beach Road, Vizag',notes:'Premium customer',status:'Delivered',date:Date.now()-86400000*7},
-            {name:'Suresh Babu',phone:'9654321098',email:'',city:'Narsapuram',model:'Thunder+',colour:'Obsidian',payment:'EMI – 36 months',amount:149999,address:'3, NH Road, Narsapuram',notes:'',status:'New',date:Date.now()-86400000*0.5},
-        ];
-        samples.forEach(s => orders.push({id:nextId++, ...s}));
-        save();
+        setTimeout(() => t.classList.remove('show'), 3000);
     }
 </script>
 </body>

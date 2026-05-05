@@ -135,105 +135,82 @@
         </div>
     </main>
 
-    <!-- Cart Script -->
+    <!-- TOAST NOTIFICATION ELEMENT -->
+    <div id="toast"></div>
+
+    <!-- Firebase & Cart Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
     <script src="cart.js"></script>
 
     <script>
-        // Dynamic Product Data
-        const products = [
-            { id: 1, name: 'Smart Commuter Helmet', price: '₹2,499', category: 'Helmets', icon: 'helmet' },
-            { id: 2, name: 'Fast Charger 5A', price: '₹3,499', category: 'Upgrades', icon: 'charger' },
-            { id: 3, name: 'All-Weather Bike Cover', price: '₹999', category: 'Care', icon: 'cover' },
-            { id: 4, name: 'FlashWheels Riding Gloves', price: '₹1,299', category: 'Apparel', icon: 'shirt' },
-            { id: 5, name: 'Premium Floor Mat', price: '₹799', category: 'Care', icon: 'cover' },
-            { id: 6, name: 'Carbon Fiber Mirror Set', price: '₹1,499', category: 'Upgrades', icon: 'cover' },
-            { id: 7, name: 'Aero Half-Face Helmet', price: '₹1,999', category: 'Helmets', icon: 'helmet' },
-            { id: 8, name: 'Classic T-Shirt - Black', price: '₹699', category: 'Apparel', icon: 'shirt' }
-        ];
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAQA8pQcKRv9hBACezKVPn9ffSQf6qvtx4",
+            authDomain: "flashwheels-ad34d.firebaseapp.com",
+            projectId: "flashwheels-ad34d",
+            storageBucket: "flashwheels-ad34d.firebasestorage.app",
+            messagingSenderId: "145924459464",
+            appId: "1:145924459464:web:63c3f93251dfa9be238efd"
+        };
 
-        // Store products globally for easy access
-        window.productsMap = {};
-        products.forEach(p => {
-            window.productsMap[p.id] = p;
-        });
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
 
-        // Helper to generate minimal clean SVGs representing products
-        function getIconSVG(type) {
-            const stroke = "#141412";
-            if (type === 'helmet') {
-                return `<svg viewBox="0 0 100 100" fill="none" stroke="${stroke}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M20 70 V50 C20 30 35 15 50 15 C65 15 80 30 80 50 V70 Z" fill="#fff" />
-                    <path d="M20 70 H80" />
-                    <path d="M50 15 V35" />
-                    <rect x="40" y="35" width="20" height="15" rx="4" />
-                </svg>`;
-            } else if (type === 'charger') {
-                return `<svg viewBox="0 0 100 100" fill="none" stroke="${stroke}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="30" y="20" width="40" height="50" rx="4" fill="#fff"/>
-                    <path d="M40 70 V85 M60 70 V85" />
-                    <circle cx="50" cy="45" r="8" />
-                </svg>`;
-            } else if (type === 'shirt') {
-                return `<svg viewBox="0 0 100 100" fill="none" stroke="${stroke}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M25 20 L40 30 L50 35 L60 30 L75 20 L85 40 L70 50 V85 H30 V50 L15 40 Z" fill="#fff"/>
-                </svg>`;
-            } else {
-                return `<svg viewBox="0 0 100 100" fill="none" stroke="${stroke}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="20" y="30" width="60" height="40" rx="4" fill="#fff"/>
-                    <path d="M30 30 L50 15 L70 30" />
-                    <circle cx="50" cy="50" r="6" />
-                </svg>`;
-            }
-        }
-
+        let products = [];
         const tabs = document.querySelectorAll('.tab');
         const grid = document.getElementById('productGrid');
 
-        // Render Products based on category
+        // Fetch configured parts from Firestore
+        db.collection('parts').onSnapshot(snapshot => {
+            products = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            const activeTab = document.querySelector('.tab.active');
+            renderProducts(activeTab ? activeTab.dataset.category : 'All');
+        }, error => console.error("Error fetching parts:", error));
+
         function renderProducts(category) {
             grid.innerHTML = '';
-            const filtered = category === 'All' ? products : products.filter(p => p.category === category);
+            // Filter by model
+            const filtered = category === 'All' ? products : products.filter(p => p.model === category || p.model === 'All Models');
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--muted); padding: 40px;">No parts configured for this model yet.</p>';
+                return;
+            }
             
             filtered.forEach(p => {
+                const discount = Number(p.discount) || 0;
+                const price = Number(p.price) || 0;
+                const discountedPrice = price - (price * discount / 100);
+
+                let priceHtml = `₹${discountedPrice.toLocaleString('en-IN')}`;
+                if (discount > 0) {
+                    priceHtml += ` <span style="text-decoration:line-through; color:var(--muted); font-size:12px; margin-left:8px;">₹${price.toLocaleString('en-IN')}</span>`;
+                }
                 grid.innerHTML += `
                     <div class="product-card">
-                        <div class="product-img-box">${getIconSVG(p.icon)}</div>
+                          <div class="product-img-box" style="padding:0; overflow:hidden;">
+                             ${p.image ? `<img src="${p.image}" alt="${p.item}" style="width:100%; height:100%; object-fit:cover; border-radius:16px;">` : `<div style="color:var(--muted)">No Image</div>`}
+                         </div>
                         <div class="product-info">
-                            <h3 class="product-title">${p.name}</h3>
-                            <p class="product-price">${p.price}</p>
-                            <button class="add-btn" data-product-id="${p.id}">Add to Cart</button>
-                        </div>
+                             <h3 class="product-title">${p.item}</h3>
+                             <p style="font-size:12px; color:var(--muted); margin-bottom:4px;">${p.model}</p>
+                             <p class="product-price">${priceHtml}</p>
+                             <button class="add-btn" onclick="addToCart('${p.id}', '${p.item.replace(/'/g, "\\'")}', ${discountedPrice}, '${p.image || ''}')">Add to Cart</button>
+                         </div>
                     </div>`;
             });
-
-            // Attach event listeners to all add-to-cart buttons
-            attachAddToCartListeners();
         }
 
-        // Attach event listeners to add-to-cart buttons
-        function attachAddToCartListeners() {
-            const addBtns = grid.querySelectorAll('.add-btn');
-            addBtns.forEach(btn => {
-                btn.addEventListener('click', handleAddToCart);
-            });
-        }
-
-        // Handle Add to Cart button click
-        function handleAddToCart(event) {
-            event.preventDefault();
-            event.stopPropagation();
-
-            const productId = parseInt(this.getAttribute('data-product-id'));
-            const product = window.productsMap[productId];
-
-            if (product) {
-                // Add item to cart
-                Cart.addItem(product);
-
-                // Show success message
-                Cart.showToast(`${product.name} added to cart!`, 2000);
+        // Add to Cart Logic
+        window.addToCart = function(id, name, price, image) {
+            if (typeof Cart !== 'undefined') {
+                Cart.addItem({ id, name, price, image });
+                Cart.showToast(name + ' added to cart!');
+            } else {
+                console.error('Cart script not loaded properly.');
             }
-        }
+        };
 
         // Tab Click Listeners
         tabs.forEach(tab => {
@@ -247,5 +224,8 @@
         // Initialize Default View
         renderProducts('All');
     </script>
+    <footer style="text-align: center; padding: 24px 20px; font-size: 13px; color: #7A7872; background: #ffffff; border-top: 1px solid #EAEAEA; width: 100%; box-sizing: border-box;">
+        Designed and developed by Punnam Tech Solutions Pvt Ltd.
+    </footer>
 </body>
 </html>
