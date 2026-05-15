@@ -53,7 +53,7 @@
 
         /* ── PRODUCT GRID ── */
         .product-grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 32px;
+            display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 20px;
         }
 
         /* ── PRODUCT CARD ── */
@@ -78,6 +78,9 @@
         .product-card:hover .add-btn { background: var(--black); color: var(--white); }
 
         /* ── RESPONSIVE ── */
+        @media(max-width: 1200px) {
+            .product-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; }
+        }
         @media(max-width: 900px) {
             nav { padding: 16px 20px; }
             nav ul { gap: 12px; flex-wrap: wrap; }
@@ -122,11 +125,20 @@
         <div class="store-header">
             <h1>Accessories & Parts</h1>
             <div class="tabs" id="categoryTabs">
-                <button class="tab active" data-category="All">All Accessories</button>
-                <button class="tab" data-category="Helmets">Helmets</button>
-                <button class="tab" data-category="Upgrades">Tech & Upgrades</button>
-                <button class="tab" data-category="Care">Bike Care</button>
-                <button class="tab" data-category="Apparel">Apparel</button>
+                <button class="tab active" data-category="All">All Categories</button>
+                <button class="tab" data-category="IGNITION LOCKSETS">IGNITION LOCKSETS</button>
+                <button class="tab" data-category="SPEEDOMETER">SPEEDOMETER</button>
+                <button class="tab" data-category="THROTTLE">THROTTLE</button>
+                <button class="tab" data-category="DISC BRAKING SYSTEM">DISC BRAKING SYSTEM</button>
+                <button class="tab" data-category="DRUM BRAKING SYSTEM">DRUM BRAKING SYSTEM</button>
+                <button class="tab" data-category="SHOCKER AND HANDLE T">SHOCKER AND HANDLE T</button>
+                <button class="tab" data-category="WIRES & SENSORS">WIRES & SENSORS</button>
+                <button class="tab" data-category="ACCESSORIES">ACCESSORIES</button>
+                <button class="tab" data-category="SWITCHES AND LED">SWITCHES AND LED</button>
+                <button class="tab" data-category="CONTROLLERS & CONVERTORS">CONTROLLERS & CONVERTORS</button>
+                <button class="tab" data-category="BLDC MOTORS">BLDC MOTORS</button>
+                <button class="tab" data-category="LEAD ACID CHARGERS">LEAD ACID CHARGERS</button>
+                <button class="tab" data-category="LITHIUM CHARGERS">LITHIUM CHARGERS</button>
             </div>
         </div>
 
@@ -170,8 +182,8 @@
 
         function renderProducts(category) {
             grid.innerHTML = '';
-            // Filter by model
-            const filtered = category === 'All' ? products : products.filter(p => p.model === category || p.model === 'All Models');
+            // Filter by category
+            const filtered = category === 'All' ? products : products.filter(p => p.category === category);
 
             if (filtered.length === 0) {
                 grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--muted); padding: 40px;">No parts configured for this model yet.</p>';
@@ -181,7 +193,10 @@
             filtered.forEach(p => {
                 const discount = Number(p.discount) || 0;
                 const price = Number(p.price) || 0;
-                const discountedPrice = price - (price * discount / 100);
+                const wsPrice = price + (price * 0.18);
+                const sellingPrice = Number(p.sellingPrice);
+                const finalSellingPrice = Number.isFinite(sellingPrice) && sellingPrice > 0 ? sellingPrice : wsPrice;
+                const mrpPrice = finalSellingPrice - (finalSellingPrice * discount / 100);
 
                 let priceHtml = `₹${discountedPrice.toLocaleString('en-IN')}`;
                 if (discount > 0) {
@@ -211,6 +226,40 @@
                 console.error('Cart script not loaded properly.');
             }
         };
+
+        // Override: show MRP on cards and pass MRP to cart
+        function renderProducts(category) {
+            grid.innerHTML = '';
+            const filtered = category === 'All' ? products : products.filter(p => p.category === category);
+            if (filtered.length === 0) {
+                grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--muted); padding: 40px;">No parts configured for this model yet.</p>';
+                return;
+            }
+            filtered.forEach(p => {
+                const discount = Number(p.discount) || 0;
+                const price = Number(p.price) || 0;
+                const wsPrice = Math.round(price + (price * 0.18));
+                const mrpPrice = Number.isFinite(Number(p.sellingPrice)) && Number(p.sellingPrice) > 0 ? Math.round(Number(p.sellingPrice)) : wsPrice;
+                const sellingPrice = Math.max(0, Math.round(mrpPrice - (mrpPrice * discount / 100)));
+                let priceHtml = `₹${mrpPrice.toLocaleString('en-IN')}`;
+                if (discount > 0) {
+                    priceHtml = `₹${sellingPrice.toLocaleString('en-IN')} <span style="text-decoration:line-through; color:var(--muted); font-size:12px; margin-left:8px;">₹${mrpPrice.toLocaleString('en-IN')}</span> <span style="color:#B00020; font-size:12px; font-weight:700; margin-left:6px;">${discount}% OFF</span>`;
+                }
+
+                grid.innerHTML += `
+                    <div class="product-card">
+                        <div class="product-img-box" style="padding:0; overflow:hidden;">
+                            ${p.image ? `<img src="${p.image}" alt="${p.item}" style="width:100%; height:100%; object-fit:cover; border-radius:16px;">` : `<div style="color:var(--muted)">No Image</div>`}
+                        </div>
+                        <div class="product-info">
+                            <h3 class="product-title">${p.item}</h3>
+                            <p style="font-size:12px; color:var(--muted); margin-bottom:4px;">${p.model}</p>
+                            <p class="product-price">${priceHtml}</p>
+                            <button class="add-btn" onclick="addToCart('${p.id}', '${p.item.replace(/'/g, "\\'")}', ${sellingPrice}, '${p.image || ''}')">Add to Cart</button>
+                        </div>
+                    </div>`;
+            });
+        }
 
         // Tab Click Listeners
         tabs.forEach(tab => {

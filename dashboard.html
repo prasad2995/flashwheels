@@ -437,7 +437,8 @@
             <div class="sb-item" onclick="showView('orders',this)"><span class="sb-icon">◎</span> All Orders <span class="sb-badge" id="sbOrderBadge">0</span></div>
             <div class="sb-group-label">Manage</div>
             <div class="sb-item" onclick="showView('new',this)"><span class="sb-icon">⊕</span> New Orders <span class="sb-badge" id="sbNewBadge">0</span></div>
-            <div class="sb-item" onclick="showView('dispatched',this)"><span class="sb-icon">◈</span> Dispatched</div>
+            <div class="sb-item" onclick="showView('confirmed',this)"><span class="sb-icon">◉</span> Confirmed <span class="sb-badge" id="sbConfirmedBadge">0</span></div>
+            <div class="sb-item" onclick="showView('dispatched',this)"><span class="sb-icon">◈</span> Dispatched <span class="sb-badge" id="sbDispatchedBadge">0</span></div>
             <div class="sb-item" onclick="showView('delivered',this)"><span class="sb-icon">✓</span> Delivered</div>
             <div class="sb-item" onclick="showView('cancelled',this)"><span class="sb-icon">✕</span> Cancelled</div>
             <div class="sb-group-label">Inventory</div>
@@ -540,6 +541,13 @@
                         <tbody id="newTbody"></tbody></table>
                 </div>
             </div>
+            <div class="view" id="view-confirmed">
+                <div class="table-wrap">
+                    <div class="table-hdr"><div class="table-hdr-title">Confirmed Orders</div></div>
+                    <table><thead><tr><th>Order ID</th><th>Customer</th><th>Model</th><th>Amount</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+                        <tbody id="confirmedTbody"></tbody>
+                    </table></div>
+            </div>
             <div class="view" id="view-dispatched">
                 <div class="table-wrap">
                     <div class="table-hdr"><div class="table-hdr-title">Dispatched Orders</div></div>
@@ -550,14 +558,14 @@
             <div class="view" id="view-delivered">
                 <div class="table-wrap">
                     <div class="table-hdr"><div class="table-hdr-title">Delivered Orders</div></div>
-                    <table><thead><tr><th>Order ID</th><th>Customer</th><th>Model</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
+                    <table><thead><tr><th>Order ID</th><th>Customer</th><th>Model</th><th>Amount</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
                         <tbody id="deliveredTbody"></tbody>
                     </table></div>
             </div>
             <div class="view" id="view-cancelled">
                 <div class="table-wrap">
                     <div class="table-hdr"><div class="table-hdr-title">Cancelled Orders</div></div>
-                    <table><thead><tr><th>Order ID</th><th>Customer</th><th>Model</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
+                    <table><thead><tr><th>Order ID</th><th>Customer</th><th>Model</th><th>Amount</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
                         <tbody id="cancelledTbody"></tbody>
                     </table></div>
             </div>
@@ -593,8 +601,27 @@
                                 <input type="file" class="form-inp" id="pImageFile" accept="image/*" style="padding: 6px; cursor: pointer;">
                                 <small style="font-size: 11px; color: var(--muted); display: block; margin-top: 4px;" id="imageStatus">No image selected</small>
                             </div>
-                            <div class="form-group"><label class="form-lbl">Basic Price (₹) *</label><input class="form-inp" id="pPrice" type="number" placeholder="0"></div>
-                            <div class="form-group"><label class="form-lbl">Discount (%)</label><input class="form-inp" id="pDiscount" type="number" placeholder="0" min="0" max="100"></div>
+                            <div class="form-group form-full" style="border-top:1px solid var(--line); padding-top:14px; margin-top:4px;">
+                                <label class="form-lbl">Bulk Image Upload (Max 500KB each)</label>
+                                <input type="file" class="form-inp" id="pBulkImageFile" accept="image/*" multiple style="padding: 6px; cursor: pointer;">
+                                <small style="font-size: 11px; color: var(--muted); display: block; margin-top: 4px;" id="bulkImageStatus">No bulk images selected</small>
+                            </div>
+                            <div class="form-group form-full">
+                                <div id="bulkPartsPanel" style="display:none; border:1px solid var(--line); background:var(--bg);">
+                                    <div style="padding:10px 12px; border-bottom:1px solid var(--line); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--muted);">Bulk Queue - Name Parts Before Save</div>
+                                    <div style="overflow-x:auto;">
+                                        <table>
+                                            <thead><tr><th>Preview</th><th>Serial No</th><th>Model</th><th>Category</th><th>Item</th><th>Qty</th><th>Price</th><th>GST</th><th>WS Price</th><th>MRP</th><th>Margin</th><th>Discount</th><th>Selling Price</th><th>Actions</th></tr></thead>
+                                            <tbody id="bulkPartsTbody"></tbody>
+                                        </table>
+                                    </div>
+                                    <div style="padding:12px; border-top:1px solid var(--line); display:flex; justify-content:flex-end;">
+                                        <button class="btn-sm" onclick="saveBulkParts()">Save Bulk Parts</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group"><label class="form-lbl">Basic Price (₹) *</label><input class="form-inp" id="pPrice" type="number" step="1" placeholder="0"></div>
+                            <div class="form-group"><label class="form-lbl">Discount (%)</label><input class="form-inp" id="pDiscount" type="number" step="1" placeholder="0" min="0" max="100"></div>
                             <div class="form-group" style="display:flex; flex-direction:row; align-items:flex-end; gap: 8px;">
                                 <button class="btn-sm-outline" id="cancelEditBtn" style="flex:1; height:41px; visibility:hidden;" onclick="resetPartForm()">Cancel</button>
                                 <button class="btn-sm" style="flex:1; height:41px;" onclick="savePart()">Save Part</button>
@@ -607,7 +634,7 @@
                     <div class="table-hdr"><div class="table-hdr-title">Configured Parts</div></div>
                     <table>
                         <thead><tr>
-                            <th>Serial No</th><th>Model</th><th>Item</th><th>Image</th><th>Price</th><th>Discount</th><th>Discounted Price</th><th>Actions</th></tr></thead><thead><tr>
+                            <th>Serial No</th><th>Added Time</th><th>Model</th><th>Category</th><th>Item</th><th>Quantity</th><th>Image</th><th>Price</th><th>GST</th><th>WS Price</th><th>MRP</th><th>Margin</th><th>Discount</th><th>Selling Price</th><th>Actions</th></tr></thead><thead><tr>
                     </tr></thead>
                         <tbody id="partsTbody"></tbody>
                     </table>
@@ -718,6 +745,107 @@
     </div>
 </div>
 
+<!-- PART EDIT MODAL -->
+<div class="modal-overlay" id="partEditModal">
+    <div class="modal" style="width:900px; max-width:96vw;">
+        <div class="modal-title" id="partEditTitle">Edit Part</div>
+        <div style="display:grid; grid-template-columns: minmax(280px, 360px) 1fr; gap:22px;">
+            <div style="background:var(--bg); border:1px solid var(--line); min-height:280px; display:flex; align-items:center; justify-content:center; padding:8px;">
+                <img id="partEditImage" src="" alt="Part" style="max-width:100%; max-height:420px; object-fit:contain;">
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-lbl">Serial No</label>
+                    <input class="form-inp" id="editPartSerial">
+                </div>
+                <div class="form-group">
+                    <label class="form-lbl">Model</label>
+                    <select class="form-sel" id="editPartModel">
+                        <option value="City Glide">City Glide</option>
+                        <option value="Swift Pro">Swift Pro</option>
+                        <option value="Bolt X">Bolt X</option>
+                        <option value="Thunder+">Thunder+</option>
+                        <option value="Ultra Elite">Ultra Elite</option>
+                        <option value="All Models">All Models (Universal)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-lbl">Item</label>
+                    <input class="form-inp" id="editPartItem">
+                </div>
+                <div class="form-group">
+                    <label class="form-lbl">Category</label>
+                    <select class="form-sel" id="editPartCategory">
+                        <option value="">Select Category</option>
+                        <option value="IGNITION LOCKSETS">IGNITION LOCKSETS</option>
+                        <option value="SPEEDOMETER">SPEEDOMETER</option>
+                        <option value="THROTTLE">THROTTLE</option>
+                        <option value="DISC BRAKING SYSTEM">DISC BRAKING SYSTEM</option>
+                        <option value="DRUM BRAKING SYSTEM">DRUM BRAKING SYSTEM</option>
+                        <option value="SHOCKER AND HANDLE T">SHOCKER AND HANDLE T</option>
+                        <option value="WIRES & SENSORS">WIRES & SENSORS</option>
+                        <option value="ACCESSORIES">ACCESSORIES</option>
+                        <option value="SWITCHES AND LED">SWITCHES AND LED</option>
+                        <option value="CONTROLLERS & CONVERTORS">CONTROLLERS & CONVERTORS</option>
+                        <option value="BLDC MOTORS">BLDC MOTORS</option>
+                        <option value="LEAD ACID CHARGERS">LEAD ACID CHARGERS</option>
+                        <option value="LITHIUM CHARGERS">LITHIUM CHARGERS</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-lbl">Quantity</label>
+                    <input class="form-inp" id="editPartQuantity" type="number" step="1" min="0">
+                </div>
+                <div class="form-group">
+                    <label class="form-lbl">Price (₹)</label>
+                    <input class="form-inp" id="editPartPrice" type="number" step="1" min="0" oninput="updatePartEditDiscounted()">
+                </div>
+                <div class="form-group">
+                    <label class="form-lbl">WS Price (Price + GST)</label>
+                    <input class="form-inp" id="editPartWsPrice" readonly>
+                </div>
+                <div class="form-group">
+                    <label class="form-lbl">MRP</label>
+                    <input class="form-inp" id="editPartSellingPrice" type="number" step="1" min="0" oninput="updatePartEditDiscounted()">
+                </div>
+                <div class="form-group">
+                    <label class="form-lbl">Discount (%)</label>
+                    <input class="form-inp" id="editPartDiscount" type="number" step="1" min="0" max="100" oninput="updatePartEditDiscounted()">
+                </div>
+                <div class="form-group">
+                    <label class="form-lbl">Selling Price</label>
+                    <input class="form-inp" id="editPartDiscounted" readonly>
+                </div>
+                <div class="form-group form-full">
+                    <small id="partEditValidationMsg" style="display:none; color:#B00020; font-size:12px; font-weight:600;">WS Price cannot exceed MRP.</small>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer" style="justify-content:space-between;">
+            <div style="display:flex; gap:10px;">
+                <button class="btn-sm-outline" id="partPrevBtn" onclick="showAdjacentPart(-1)">← Previous</button>
+                <button class="btn-sm-outline" id="partNextBtn" onclick="showAdjacentPart(1)">Next →</button>
+            </div>
+            <div style="display:flex; gap:10px;">
+                <button class="btn-sm-outline" onclick="closePartEditModal()">Close</button>
+                <button class="btn-sm" id="partEditSaveBtn" onclick="savePartFromModal()">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div class="modal-overlay" id="confirmModal">
+    <div class="modal" style="width:440px; max-width:94vw;">
+        <div class="modal-title" id="confirmTitle">Please Confirm</div>
+        <div style="font-size:14px; color:var(--charcoal); line-height:1.5;" id="confirmMessage">Are you sure?</div>
+        <div class="modal-footer">
+            <button class="btn-sm-outline" onclick="closeConfirmModal(false)">Cancel</button>
+            <button class="btn-sm" onclick="closeConfirmModal(true)">Confirm</button>
+        </div>
+    </div>
+</div>
+
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
@@ -747,6 +875,9 @@
     let parts = []; // Will be populated from Firestore
     let currentOrderId = null;
     let currentUser = null;
+    let editingPartId = null;
+    let currentPartEditIndex = -1;
+    let bulkEditMode = false;
 
     // ── Auth State Listener ──
     auth.onAuthStateChanged(user => {
@@ -844,14 +975,21 @@
         renderTable();
         renderRecent();
         renderFiltered('New','newTbody');
+        renderFiltered('Confirmed','confirmedTbody');
         renderFiltered('Dispatched','dispatchedTbody');
         renderFiltered('Delivered','deliveredTbody');
         renderFiltered('Cancelled','cancelledTbody');
         renderPartsTable();
         // badges
         const newCount = orders.filter(o=>o.status==='New').length;
+        const confirmedCount = orders.filter(o=>o.status==='Confirmed').length;
+        const dispatchedCount = orders.filter(o=>o.status==='Dispatched').length;
         document.getElementById('sbOrderBadge').textContent = orders.length;
         document.getElementById('sbNewBadge').textContent = newCount;
+        const confirmedBadge = document.getElementById('sbConfirmedBadge');
+        const dispatchedBadge = document.getElementById('sbDispatchedBadge');
+        if (confirmedBadge) confirmedBadge.textContent = confirmedCount;
+        if (dispatchedBadge) dispatchedBadge.textContent = dispatchedCount;
     }
 
     // ── Stats ──
@@ -936,7 +1074,7 @@
         if(el) el.classList.add('active');
         document.querySelector('.sidebar').classList.remove('open');
         document.getElementById('sidebarOverlay')?.classList.remove('active');
-        const titles = {dashboard:'Dashboard',orders:'All Orders',new:'New Orders',dispatched:'Dispatched',delivered:'Delivered',cancelled:'Cancelled',config:'Parts Configuration'};
+        const titles = {dashboard:'Dashboard',orders:'All Orders',new:'New Orders',confirmed:'Confirmed Orders',dispatched:'Dispatched',delivered:'Delivered',cancelled:'Cancelled',config:'Parts Configuration'};
         document.getElementById('viewTitle').textContent = titles[name]||name;
         hideSidebarOnMobile();
         refreshAll();
@@ -1107,6 +1245,7 @@
     }
 
     let base64Image = '';
+    let bulkPartsQueue = [];
 
     document.getElementById('pImageFile')?.addEventListener('change', function(e) {
         const file = e.target.files[0];
@@ -1140,6 +1279,200 @@
         };
         reader.readAsDataURL(file);
     });
+
+    document.getElementById('pBulkImageFile')?.addEventListener('change', function(e) {
+        const files = Array.from(e.target.files || []);
+        const statusEl = document.getElementById('bulkImageStatus');
+        if (!files.length) {
+            statusEl.textContent = 'No bulk images selected';
+            return;
+        }
+
+        const validFiles = files.filter(file => {
+            if (!file.type.startsWith('image/')) return false;
+            if (file.size > 512000) return false;
+            return true;
+        });
+        const invalidCount = files.length - validFiles.length;
+        if (!validFiles.length) {
+            showToast('No valid images found. Use image files under 500KB.');
+            statusEl.textContent = 'No valid images selected';
+            e.target.value = '';
+            return;
+        }
+
+        let pendingReads = validFiles.length;
+        validFiles.forEach((file, idx) => {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const inferredName = file.name.replace(/\.[^/.]+$/, '').trim();
+                const queueIndex = bulkPartsQueue.length + idx + 1;
+                const selectedModel = document.getElementById('pModel')?.value || '';
+                const selectedPrice = document.getElementById('pPrice')?.value.trim() || '';
+                const selectedDiscount = document.getElementById('pDiscount')?.value.trim() || '0';
+                bulkPartsQueue.push({
+                    id: `bulk-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+                    serial: `PRT-${Date.now().toString().slice(-6)}-${queueIndex}`,
+                    model: selectedModel,
+                    category: '',
+                    item: inferredName || '',
+                    quantity: '0',
+                    image: event.target.result,
+                    price: selectedPrice,
+                    sellingPrice: selectedPrice,
+                    discount: selectedDiscount
+                });
+                pendingReads--;
+                if (pendingReads === 0) {
+                    renderBulkPartsQueue();
+                    statusEl.textContent = `${validFiles.length} image(s) added to bulk queue${invalidCount ? ` (${invalidCount} skipped)` : ''}`;
+                    e.target.value = '';
+                }
+            };
+            reader.readAsDataURL(file);
+        });
+    });
+
+    function renderBulkPartsQueue() {
+        const panel = document.getElementById('bulkPartsPanel');
+        const tbody = document.getElementById('bulkPartsTbody');
+        if (!panel || !tbody) return;
+
+        if (!bulkPartsQueue.length) {
+            panel.style.display = 'none';
+            tbody.innerHTML = '';
+            return;
+        }
+
+        panel.style.display = 'block';
+        tbody.innerHTML = bulkPartsQueue.map((part, index) => `
+            <tr>
+                <td><img src="${part.image}" alt="Img" style="height:32px;width:32px;border-radius:4px;object-fit:cover;"></td>
+                <td><input class="form-inp" value="${escapeAttr(part.serial)}" oninput="updateBulkPartField(${index}, 'serial', this.value)" style="min-width:140px;"></td>
+                <td>
+                    <select class="form-sel" onchange="updateBulkPartField(${index}, 'model', this.value)">
+                        <option value="City Glide" ${part.model === 'City Glide' ? 'selected' : ''}>City Glide</option>
+                        <option value="Swift Pro" ${part.model === 'Swift Pro' ? 'selected' : ''}>Swift Pro</option>
+                        <option value="Bolt X" ${part.model === 'Bolt X' ? 'selected' : ''}>Bolt X</option>
+                        <option value="Thunder+" ${part.model === 'Thunder+' ? 'selected' : ''}>Thunder+</option>
+                        <option value="Ultra Elite" ${part.model === 'Ultra Elite' ? 'selected' : ''}>Ultra Elite</option>
+                        <option value="All Models" ${part.model === 'All Models' ? 'selected' : ''}>All Models (Universal)</option>
+                    </select>
+                </td>
+                <td><input class="form-inp" value="${escapeAttr(part.item)}" oninput="updateBulkPartField(${index}, 'item', this.value)" placeholder="Enter item name"></td>
+                <td><input class="form-inp" type="number" min="0" value="${escapeAttr(part.price)}" oninput="updateBulkPartField(${index}, 'price', this.value)" placeholder="0" style="min-width:100px;"></td>
+                <td><input class="form-inp" type="number" min="0" max="100" value="${escapeAttr(part.discount)}" oninput="updateBulkPartField(${index}, 'discount', this.value)" placeholder="0" style="min-width:90px;"></td>
+                <td><strong id="bulkDiscounted-${index}">₹${getBulkDiscountedPrice(part).toLocaleString('en-IN')}</strong></td>
+                <td>
+                    <div class="action-btns">
+                        <button class="act-btn" onclick="editBulkPart(${index})">Edit</button>
+                        <button class="act-btn act-btn-del" onclick="removeBulkPart(${index})">Remove</button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function getBulkDiscountedPrice(part) {
+        const price = Number(part.price) || 0;
+        const discount = Number(part.discount) || 0;
+        return Math.max(0, price - (price * discount / 100));
+    }
+
+    function escapeAttr(value) {
+        return String(value || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function updateBulkPartField(index, field, value) {
+        if (!bulkPartsQueue[index]) return;
+        bulkPartsQueue[index][field] = value;
+        if (field === 'price' || field === 'discount') {
+            const discountedEl = document.getElementById(`bulkDiscounted-${index}`);
+            if (discountedEl) {
+                discountedEl.textContent = `₹${getBulkDiscountedPrice(bulkPartsQueue[index]).toLocaleString('en-IN')}`;
+            }
+        }
+    }
+
+    function removeBulkPart(index) {
+        if (index < 0 || index >= bulkPartsQueue.length) return;
+        bulkPartsQueue.splice(index, 1);
+        renderBulkPartsQueue();
+        const statusEl = document.getElementById('bulkImageStatus');
+        if (statusEl) {
+            statusEl.textContent = bulkPartsQueue.length ? `${bulkPartsQueue.length} image(s) in bulk queue` : 'No bulk images selected';
+        }
+    }
+
+    function editBulkPart(index) {
+        if (index < 0 || index >= bulkPartsQueue.length) return;
+        bulkEditMode = true;
+        currentPartEditIndex = index;
+        openPartEditModal();
+    }
+
+    async function saveBulkParts() {
+        if (!bulkPartsQueue.length) {
+            showToast('Bulk queue is empty.');
+            return;
+        }
+        const hasInvalid = bulkPartsQueue.some(part =>
+            !String(part.serial || '').trim() ||
+            !String(part.model || '').trim() ||
+            !String(part.item || '').trim() ||
+            !String(part.price || '').trim() ||
+            !part.image
+        );
+        if (hasInvalid) {
+            showToast('Fill serial number, model, item, and price for all bulk parts.');
+            return;
+        }
+
+        try {
+            const maxEstimatedPayloadBytes = 8 * 1024 * 1024; // stay below 10MB Firestore request limit
+            let currentBatch = db.batch();
+            let currentBatchSize = 0;
+            let committedCount = 0;
+
+            for (const part of bulkPartsQueue) {
+                const payload = {
+                    model: String(part.model).trim(),
+                    serial: String(part.serial).trim(),
+                    item: String(part.item).trim(),
+                    image: part.image,
+                    price: String(part.price).trim(),
+                    discount: String(part.discount || '0').trim() || '0'
+                };
+
+                const estimatedSize = JSON.stringify(payload).length * 2; // UTF-16 estimate in browser
+
+                if (currentBatchSize > 0 && (currentBatchSize + estimatedSize) > maxEstimatedPayloadBytes) {
+                    await currentBatch.commit();
+                    committedCount += 1;
+                    currentBatch = db.batch();
+                    currentBatchSize = 0;
+                }
+
+                const partRef = db.collection('parts').doc();
+                currentBatch.set(partRef, payload);
+                currentBatchSize += estimatedSize;
+            }
+
+            if (currentBatchSize > 0) {
+                await currentBatch.commit();
+                committedCount += 1;
+            }
+
+            showToast(`Saved ${bulkPartsQueue.length} parts successfully.`);
+            bulkPartsQueue = [];
+            renderBulkPartsQueue();
+            const statusEl = document.getElementById('bulkImageStatus');
+            if (statusEl) statusEl.textContent = 'No bulk images selected';
+        } catch (error) {
+            console.error('Error saving bulk parts:', error);
+            showToast('Error saving bulk parts. Try fewer images at once.');
+        }
+    }
 
     function savePart() {
         const model = document.getElementById('pModel').value;
@@ -1294,7 +1627,421 @@
         reader.readAsText(file);
     }
 
+    // Override part edit flow: popup editor with large image and prev/next navigation
+    function editPart(partId) {
+        const index = parts.findIndex(p => p.id === partId);
+        if (index < 0) return;
+        bulkEditMode = false;
+        currentPartEditIndex = index;
+        openPartEditModal();
+    }
+
+    function openPartEditModal() {
+        const source = bulkEditMode ? bulkPartsQueue : parts;
+        if (currentPartEditIndex < 0 || currentPartEditIndex >= source.length) return;
+        const part = source[currentPartEditIndex];
+        editingPartId = bulkEditMode ? null : part.id;
+        document.getElementById('partEditTitle').textContent = bulkEditMode
+            ? `Edit Bulk Part (${currentPartEditIndex + 1}/${source.length})`
+            : `Edit Part (${currentPartEditIndex + 1}/${source.length})`;
+        document.getElementById('editPartSerial').value = part.serial || '';
+        document.getElementById('editPartModel').value = part.model || 'City Glide';
+        document.getElementById('editPartItem').value = part.item || '';
+        const categoryEl = document.getElementById('editPartCategory');
+        const quantityEl = document.getElementById('editPartQuantity');
+        const sellingPriceEl = document.getElementById('editPartSellingPrice');
+        if (categoryEl) categoryEl.value = part.category || '';
+        if (quantityEl) quantityEl.value = part.quantity ?? '';
+        document.getElementById('editPartPrice').value = part.price || '';
+        document.getElementById('editPartDiscount').value = part.discount || '0';
+        if (sellingPriceEl) {
+            const existingMrp = String(part.sellingPrice || '').trim();
+            sellingPriceEl.value = existingMrp || (Number(part.price || 0) * 1.18).toFixed(2);
+        }
+        const img = document.getElementById('partEditImage');
+        img.src = part.image || '';
+        img.style.display = part.image ? 'block' : 'none';
+        updatePartEditDiscounted();
+        const prevBtn = document.getElementById('partPrevBtn');
+        const nextBtn = document.getElementById('partNextBtn');
+        if (prevBtn) prevBtn.disabled = currentPartEditIndex <= 0;
+        if (nextBtn) nextBtn.disabled = currentPartEditIndex >= (source.length - 1);
+        document.getElementById('partEditModal').classList.add('open');
+    }
+
+    function updatePartEditDiscounted() {
+        const price = Number(document.getElementById('editPartPrice').value) || 0;
+        const discount = Number(document.getElementById('editPartDiscount').value) || 0;
+        const discounted = Math.max(0, price - (price * discount / 100));
+        document.getElementById('editPartDiscounted').value = `₹${discounted.toLocaleString('en-IN')}`;
+    }
+
+    function showAdjacentPart(direction) {
+        const source = bulkEditMode ? bulkPartsQueue : parts;
+        const nextIndex = currentPartEditIndex + direction;
+        if (nextIndex < 0 || nextIndex >= source.length) return;
+        currentPartEditIndex = nextIndex;
+        openPartEditModal();
+    }
+
+    function closePartEditModal() {
+        document.getElementById('partEditModal').classList.remove('open');
+        bulkEditMode = false;
+    }
+
+    function savePartFromModal() {
+        const model = document.getElementById('editPartModel').value;
+        const serial = document.getElementById('editPartSerial').value.trim();
+        const item = document.getElementById('editPartItem').value.trim();
+        const category = (document.getElementById('editPartCategory')?.value || '').trim();
+        const quantity = (document.getElementById('editPartQuantity')?.value || '0').trim();
+        const price = document.getElementById('editPartPrice').value.trim();
+        const sellingPrice = (document.getElementById('editPartSellingPrice')?.value || '').trim();
+        const discount = document.getElementById('editPartDiscount').value.trim();
+        if (typeof validatePartEditPricing === 'function' && !validatePartEditPricing()) {
+            showToast('Selling Price cannot exceed MRP.');
+            return;
+        }
+        const source = bulkEditMode ? bulkPartsQueue : parts;
+        const existing = source[currentPartEditIndex];
+        if (!existing || !model || !serial || !item || !price) {
+            showToast('Please fill all required fields.');
+            return;
+        }
+
+        if (bulkEditMode) {
+            bulkPartsQueue[currentPartEditIndex] = {
+                ...existing,
+                model,
+                serial,
+                category,
+                item,
+                quantity,
+                sellingPrice,
+                price,
+                discount: discount || '0'
+            };
+            renderBulkPartsQueue();
+            showToast('Bulk part updated.');
+            return;
+        }
+
+        if (!editingPartId) return;
+        db.collection('parts').doc(editingPartId).update({
+            model,
+            serial,
+            category,
+            item,
+            quantity,
+            image: existing.image || '',
+            sellingPrice,
+            price,
+            discount: discount || '0'
+        })
+            .then(() => showToast('Part updated successfully.'))
+            .catch(error => {
+                console.error('Error updating part:', error);
+                showToast('Error updating part.');
+            });
+    }
+
     // ── Toast Notification ──
+    function computePricing(price, discount, sellingPriceInput) {
+        const p = Number(price) || 0;
+        const d = Number(discount) || 0;
+        const gst = Math.round(p * 0.18);
+        const wsPrice = Math.round(p + gst);
+        const sellingPrice = (sellingPriceInput !== undefined && sellingPriceInput !== null && String(sellingPriceInput).trim() !== '')
+            ? Math.round(Number(sellingPriceInput) || wsPrice)
+            : wsPrice;
+        const mrp = Math.max(0, Math.round(sellingPrice - (sellingPrice * d / 100)));
+        return { price: Math.round(p), gst, wsPrice, sellingPrice, mrp };
+    }
+
+    function renderPartsTable() {
+        const tb = document.getElementById('partsTbody');
+        if(!tb) return;
+        if(parts.length === 0) {
+            tb.innerHTML = `<tr class="empty-tr"><td colspan="15" style="padding:48px;text-align:center;color:var(--mid);font-size:13px;border:none;">No parts configured.</td></tr>`;
+            return;
+        }
+        tb.innerHTML = parts.map((p) => {
+            const pricing = computePricing(p.price, p.discount, p.sellingPrice);
+            const discount = Number(p.discount) || 0;
+            const addedTime = p.createdAt?.toDate ? p.createdAt.toDate().toLocaleString('en-IN') : (p.createdAt ? new Date(p.createdAt).toLocaleString('en-IN') : '—');
+            return `<tr>
+                <td data-label="Serial No" class="td-id">${p.serial}</td>
+                <td data-label="Added Time">${addedTime}</td>
+                <td data-label="Model">${p.model}</td>
+                <td data-label="Category">${p.category || '—'}</td>
+                <td data-label="Item" class="td-name">${p.item}</td>
+                <td data-label="Quantity">${p.quantity ?? '—'}</td>
+                <td data-label="Image">${p.image ? `<img src="${p.image}" alt="Img" style="height:32px;width:32px;border-radius:4px;object-fit:cover;">` : '—'}</td>
+                <td data-label="Price">₹${pricing.price.toLocaleString('en-IN')}</td>
+                <td data-label="GST">₹${pricing.gst.toLocaleString('en-IN')}</td>
+                <td data-label="WS Price">₹${pricing.wsPrice.toLocaleString('en-IN')}</td>
+                <td data-label="MRP">₹${pricing.sellingPrice.toLocaleString('en-IN')}</td>
+                <td data-label="Margin">${formatMarginCell(pricing.mrp - pricing.wsPrice)}</td>
+                <td data-label="Discount">${discount > 0 ? discount + '%' : '—'}</td>
+                <td data-label="Selling Price"><strong>₹${pricing.mrp.toLocaleString('en-IN')}</strong></td>
+                <td><div class="action-btns"><button class="act-btn" onclick="editPart('${p.id}')">Edit</button><button class="act-btn act-btn-del" onclick="deletePart('${p.id}')">Delete</button></div></td>
+            </tr>`;
+        }).join('');
+    }
+
+    function renderBulkPartsQueue() {
+        const panel = document.getElementById('bulkPartsPanel');
+        const tbody = document.getElementById('bulkPartsTbody');
+        if (!panel || !tbody) return;
+        if (!bulkPartsQueue.length) { panel.style.display = 'none'; tbody.innerHTML = ''; return; }
+        panel.style.display = 'block';
+        tbody.innerHTML = bulkPartsQueue.map((part, index) => {
+            const pricing = computePricing(part.price, part.discount, part.sellingPrice);
+            return `<tr>
+                <td><img src="${part.image}" alt="Img" style="height:32px;width:32px;border-radius:4px;object-fit:cover;"></td>
+                <td><input class="form-inp" value="${escapeAttr(part.serial)}" oninput="updateBulkPartField(${index}, 'serial', this.value)" style="min-width:140px;"></td>
+                <td><select class="form-sel" onchange="updateBulkPartField(${index}, 'model', this.value)"><option value="City Glide" ${part.model === 'City Glide' ? 'selected' : ''}>City Glide</option><option value="Swift Pro" ${part.model === 'Swift Pro' ? 'selected' : ''}>Swift Pro</option><option value="Bolt X" ${part.model === 'Bolt X' ? 'selected' : ''}>Bolt X</option><option value="Thunder+" ${part.model === 'Thunder+' ? 'selected' : ''}>Thunder+</option><option value="Ultra Elite" ${part.model === 'Ultra Elite' ? 'selected' : ''}>Ultra Elite</option><option value="All Models" ${part.model === 'All Models' ? 'selected' : ''}>All Models (Universal)</option></select></td>
+                <td><select class="form-sel" onchange="updateBulkPartField(${index}, 'category', this.value)">
+                    <option value="" ${!part.category ? 'selected' : ''}>Select Category</option>
+                    <option value="IGNITION LOCKSETS" ${part.category === 'IGNITION LOCKSETS' ? 'selected' : ''}>IGNITION LOCKSETS</option>
+                    <option value="SPEEDOMETER" ${part.category === 'SPEEDOMETER' ? 'selected' : ''}>SPEEDOMETER</option>
+                    <option value="THROTTLE" ${part.category === 'THROTTLE' ? 'selected' : ''}>THROTTLE</option>
+                    <option value="DISC BRAKING SYSTEM" ${part.category === 'DISC BRAKING SYSTEM' ? 'selected' : ''}>DISC BRAKING SYSTEM</option>
+                    <option value="DRUM BRAKING SYSTEM" ${part.category === 'DRUM BRAKING SYSTEM' ? 'selected' : ''}>DRUM BRAKING SYSTEM</option>
+                    <option value="SHOCKER AND HANDLE T" ${part.category === 'SHOCKER AND HANDLE T' ? 'selected' : ''}>SHOCKER AND HANDLE T</option>
+                    <option value="WIRES & SENSORS" ${part.category === 'WIRES & SENSORS' ? 'selected' : ''}>WIRES & SENSORS</option>
+                    <option value="ACCESSORIES" ${part.category === 'ACCESSORIES' ? 'selected' : ''}>ACCESSORIES</option>
+                    <option value="SWITCHES AND LED" ${part.category === 'SWITCHES AND LED' ? 'selected' : ''}>SWITCHES AND LED</option>
+                    <option value="CONTROLLERS & CONVERTORS" ${part.category === 'CONTROLLERS & CONVERTORS' ? 'selected' : ''}>CONTROLLERS & CONVERTORS</option>
+                    <option value="BLDC MOTORS" ${part.category === 'BLDC MOTORS' ? 'selected' : ''}>BLDC MOTORS</option>
+                    <option value="LEAD ACID CHARGERS" ${part.category === 'LEAD ACID CHARGERS' ? 'selected' : ''}>LEAD ACID CHARGERS</option>
+                    <option value="LITHIUM CHARGERS" ${part.category === 'LITHIUM CHARGERS' ? 'selected' : ''}>LITHIUM CHARGERS</option>
+                </select></td>
+                <td><input class="form-inp" value="${escapeAttr(part.item)}" oninput="updateBulkPartField(${index}, 'item', this.value)"></td>
+                <td><input class="form-inp" type="number" step="1" min="0" value="${escapeAttr(part.quantity ?? '')}" oninput="updateBulkPartField(${index}, 'quantity', this.value)" style="min-width:90px;"></td>
+                <td><input class="form-inp" type="number" step="1" min="0" value="${escapeAttr(part.price)}" oninput="updateBulkPartField(${index}, 'price', this.value)" style="min-width:100px;"></td>
+                <td><strong id="bulkGst-${index}">₹${pricing.gst.toLocaleString('en-IN')}</strong></td>
+                <td><strong id="bulkWs-${index}">₹${pricing.wsPrice.toLocaleString('en-IN')}</strong></td>
+                <td><strong id="bulkSp-${index}">₹${pricing.sellingPrice.toLocaleString('en-IN')}</strong></td>
+                <td><strong id="bulkMargin-${index}" style="${getMarginStyle(pricing.mrp - pricing.wsPrice)}">${formatCurrency(pricing.mrp - pricing.wsPrice)}</strong></td>
+                <td><input class="form-inp" type="number" step="1" min="0" max="100" value="${escapeAttr(part.discount)}" oninput="updateBulkPartField(${index}, 'discount', this.value)" style="min-width:90px;"></td>
+                <td><strong id="bulkMrp-${index}">₹${pricing.mrp.toLocaleString('en-IN')}</strong></td>
+                <td><div class="action-btns"><button class="act-btn" onclick="editBulkPart(${index})">Edit</button><button class="act-btn act-btn-del" onclick="removeBulkPart(${index})">Remove</button></div></td>
+            </tr>`;
+        }).join('');
+    }
+
+    function updateBulkPartField(index, field, value) {
+        if (!bulkPartsQueue[index]) return;
+        bulkPartsQueue[index][field] = value;
+        if (field === 'price' || field === 'discount') {
+            const pricing = computePricing(bulkPartsQueue[index].price, bulkPartsQueue[index].discount, bulkPartsQueue[index].sellingPrice);
+            const gstEl = document.getElementById(`bulkGst-${index}`);
+            const wsEl = document.getElementById(`bulkWs-${index}`);
+            const spEl = document.getElementById(`bulkSp-${index}`);
+            const marginEl = document.getElementById(`bulkMargin-${index}`);
+            const mrpEl = document.getElementById(`bulkMrp-${index}`);
+            if (gstEl) gstEl.textContent = `₹${pricing.gst.toLocaleString('en-IN')}`;
+            if (wsEl) wsEl.textContent = `₹${pricing.wsPrice.toLocaleString('en-IN')}`;
+            if (spEl) spEl.textContent = `₹${pricing.sellingPrice.toLocaleString('en-IN')}`;
+            if (marginEl) {
+                const marginValue = pricing.mrp - pricing.wsPrice;
+                marginEl.textContent = formatCurrency(marginValue);
+                marginEl.style.cssText = getMarginStyle(marginValue);
+            }
+            if (mrpEl) mrpEl.textContent = `₹${pricing.mrp.toLocaleString('en-IN')}`;
+        }
+    }
+
+    function formatCurrency(value) {
+        return `₹${Math.round(Number(value || 0)).toLocaleString('en-IN')}`;
+    }
+
+    function getMarginStyle(margin) {
+        const m = Number(margin) || 0;
+        if (m < 0) return 'color:#B00020;font-weight:700;';
+        if (m > 0) return 'color:#1E7A3B;font-weight:500;';
+        return 'color:var(--muted);font-weight:500;';
+    }
+
+    function formatMarginCell(margin) {
+        return `<strong style="${getMarginStyle(margin)}">${formatCurrency(margin)}</strong>`;
+    }
+
+    async function saveBulkParts() {
+        if (!bulkPartsQueue.length) return showToast('Bulk queue is empty.');
+        const hasInvalid = bulkPartsQueue.some(part => !String(part.serial || '').trim() || !String(part.model || '').trim() || !String(part.item || '').trim() || !String(part.price || '').trim() || !part.image);
+        if (hasInvalid) return showToast('Fill serial number, model, item, and price for all bulk parts.');
+        try {
+            const maxEstimatedPayloadBytes = 8 * 1024 * 1024;
+            let currentBatch = db.batch(), currentBatchSize = 0;
+            for (const part of bulkPartsQueue) {
+                const payload = { model:String(part.model).trim(), serial:String(part.serial).trim(), category:String(part.category || '').trim(), item:String(part.item).trim(), quantity:String(part.quantity || '0').trim() || '0', image:part.image, price:String(part.price).trim(), sellingPrice:String(part.sellingPrice || part.price || '0').trim() || '0', discount:String(part.discount || '0').trim() || '0', createdAt: firebase.firestore.Timestamp.now() };
+                const estimatedSize = JSON.stringify(payload).length * 2;
+                if (currentBatchSize > 0 && (currentBatchSize + estimatedSize) > maxEstimatedPayloadBytes) { await currentBatch.commit(); currentBatch = db.batch(); currentBatchSize = 0; }
+                currentBatch.set(db.collection('parts').doc(), payload);
+                currentBatchSize += estimatedSize;
+            }
+            if (currentBatchSize > 0) await currentBatch.commit();
+            showToast(`Saved ${bulkPartsQueue.length} parts successfully.`);
+            bulkPartsQueue = [];
+            renderBulkPartsQueue();
+            const statusEl = document.getElementById('bulkImageStatus');
+            if (statusEl) statusEl.textContent = 'No bulk images selected';
+        } catch (error) {
+            console.error('Error saving bulk parts:', error);
+            showToast('Error saving bulk parts. Try fewer images at once.');
+        }
+    }
+
+    function savePart() {
+        const model = document.getElementById('pModel').value;
+        const serial = document.getElementById('pSerial').value.trim();
+        const item = document.getElementById('pItem').value.trim();
+        const price = document.getElementById('pPrice').value.trim();
+        const discount = document.getElementById('pDiscount').value.trim();
+        if(!model || !serial || !item || !price || !base64Image) return showToast('Please fill all required fields and select an image.');
+        const partData = { model, serial, category: '', quantity: '0', item, image: base64Image, price, sellingPrice: price, discount: discount || '0' };
+        if (!editingPartId) partData.createdAt = firebase.firestore.Timestamp.now();
+        const btn = document.querySelector('button[onclick="savePart()"]');
+        if (btn) { btn.textContent = editingPartId ? 'Updating...' : 'Saving...'; btn.disabled = true; }
+        const op = editingPartId ? db.collection('parts').doc(editingPartId).update(partData) : db.collection('parts').add(partData);
+        op.then(() => { showToast(editingPartId ? 'Part updated successfully.' : 'Part added successfully.'); resetPartForm(); })
+          .catch(error => { console.error('Error saving part:', error); showToast('Error saving part.'); })
+          .finally(() => { if (btn) { btn.textContent = 'Save Part'; btn.disabled = false; } });
+    }
+
+    function updatePartEditDiscounted() {
+        const spEl = document.getElementById('editPartSellingPrice');
+        const wsEl = document.getElementById('editPartWsPrice');
+        const pricing = computePricing(
+            document.getElementById('editPartPrice').value,
+            document.getElementById('editPartDiscount').value,
+            spEl?.value
+        );
+        if (wsEl) wsEl.value = `₹${pricing.wsPrice.toLocaleString('en-IN')}`;
+        document.getElementById('editPartDiscounted').value = `₹${pricing.mrp.toLocaleString('en-IN')}`;
+    }
+
+    function exportPartsCSV() {
+        if(parts.length === 0) { showToast('No parts to export.'); return; }
+        const rows = [['Serial No', 'Added Time', 'Bike Model', 'Category', 'Item Name', 'Quantity', 'Price', 'GST', 'WS Price', 'MRP', 'Margin', 'Discount (%)', 'Selling Price']];
+        parts.forEach(p => {
+            const pricing = computePricing(p.price, p.discount, p.sellingPrice);
+            const addedTime = p.createdAt?.toDate ? p.createdAt.toDate().toISOString() : (p.createdAt || '');
+            const margin = Math.round(pricing.mrp - pricing.wsPrice);
+            rows.push([
+                `"${p.serial}"`,
+                `"${addedTime}"`,
+                `"${p.model}"`,
+                `"${p.category || ''}"`,
+                `"${p.item}"`,
+                `"${p.quantity ?? ''}"`,
+                `"${pricing.price}"`,
+                `"${pricing.gst}"`,
+                `"${pricing.wsPrice}"`,
+                `"${pricing.sellingPrice}"`,
+                `"${margin}"`,
+                `"${p.discount || 0}"`,
+                `"${pricing.mrp}"`
+            ]);
+        });
+        const blob = new Blob([rows.map(r => r.join(',')).join('\n')], { type: 'text/csv' });
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'flashwheels_parts.csv'; a.click();
+    }
+
+    function importPartsCSV(event) {
+        const file = event.target.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = async e => {
+            const lines = e.target.result.split(/\r?\n/);
+            let count = 0;
+            const batch = db.batch();
+            for(let i=1; i<lines.length; i++) {
+                if(!lines[i].trim()) continue;
+                const row = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.replace(/(^"|"$)/g, '').trim());
+                if(row.length >= 5) {
+                    batch.set(db.collection('parts').doc(), { serial: row[0], model: row[2] || row[1], item: row[3] || row[2], image: '', price: row[4] || row[3] || '0', discount: row[8] || row[4] || '0', createdAt: firebase.firestore.Timestamp.now() });
+                    count++;
+                }
+            }
+            try { await batch.commit(); showToast(`Imported ${count} parts successfully.`); }
+            catch(error) { console.error('Error importing parts:', error); showToast('Error importing parts.'); }
+            event.target.value = '';
+        };
+        reader.readAsText(file);
+    }
+
+    function updatePartEditDiscounted() {
+        const spEl = document.getElementById('editPartSellingPrice');
+        const wsEl = document.getElementById('editPartWsPrice');
+        const pricing = computePricing(
+            document.getElementById('editPartPrice').value,
+            document.getElementById('editPartDiscount').value,
+            spEl?.value
+        );
+        if (wsEl) wsEl.value = `₹${pricing.wsPrice.toLocaleString('en-IN')}`;
+        document.getElementById('editPartDiscounted').value = `₹${pricing.mrp.toLocaleString('en-IN')}`;
+        validatePartEditPricing();
+    }
+
+    function validatePartEditPricing() {
+        const mrpValue = Number(document.getElementById('editPartSellingPrice')?.value || 0);
+        const sellingText = document.getElementById('editPartDiscounted')?.value || '';
+        const sellingValue = Number(String(sellingText).replace(/[^\d.-]/g, '')) || 0;
+        const wsText = document.getElementById('editPartWsPrice')?.value || '';
+        const wsValue = Number(String(wsText).replace(/[^\d.-]/g, '')) || 0;
+        const isInvalid = sellingValue > mrpValue || wsValue > mrpValue;
+        const msgEl = document.getElementById('partEditValidationMsg');
+        const saveBtn = document.getElementById('partEditSaveBtn');
+        if (msgEl) msgEl.style.display = isInvalid ? 'block' : 'none';
+        if (saveBtn) saveBtn.disabled = isInvalid;
+        return !isInvalid;
+    }
+
+    let confirmResolver = null;
+
+    function openConfirmModal(message, title = 'Please Confirm') {
+        const modal = document.getElementById('confirmModal');
+        const msgEl = document.getElementById('confirmMessage');
+        const titleEl = document.getElementById('confirmTitle');
+        if (msgEl) msgEl.textContent = message || 'Are you sure?';
+        if (titleEl) titleEl.textContent = title;
+        if (modal) modal.classList.add('open');
+        return new Promise(resolve => { confirmResolver = resolve; });
+    }
+
+    function closeConfirmModal(result) {
+        const modal = document.getElementById('confirmModal');
+        if (modal) modal.classList.remove('open');
+        if (confirmResolver) {
+            confirmResolver(!!result);
+            confirmResolver = null;
+        }
+    }
+
+    async function deleteOrder(id) {
+        const ok = await openConfirmModal('Delete this order?', 'Delete Order');
+        if(!ok) return;
+        const o = orders.find(x=>String(x.id)===String(id));
+        if(!o) return;
+        db.collection('orders').doc(o._docId).delete()
+            .then(() => showToast(`Order #${id} deleted.`))
+            .catch(error => {
+                console.error('Error deleting order:', error);
+                showToast('Error deleting order.');
+            });
+    }
+
+    async function deletePart(partId) {
+        const ok = await openConfirmModal('Delete this part?', 'Delete Part');
+        if(!ok) return;
+        db.collection('parts').doc(partId).delete()
+            .then(() => showToast('Part deleted.'))
+            .catch(() => showToast('Error deleting part.'));
+    }
+
     function showToast(msg) {
         const t = document.getElementById('toast');
         if(!t) return;
